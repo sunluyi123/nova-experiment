@@ -1862,15 +1862,7 @@ function buildPayload() {
   };
 }
 
-async function getFeishuToken() {
-  const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ app_id: FEISHU_APP_ID, app_secret: FEISHU_APP_SECRET })
-  });
-  const data = await res.json();
-  return data.tenant_access_token;
-}
+// getFeishuToken moved to api/feishu.js (server-side)
 
 async function submitToFeishu() {
   const btn    = document.getElementById('submit-btn');
@@ -1878,32 +1870,20 @@ async function submitToFeishu() {
   btn.disabled = true;
   btn.textContent = '提交中……';
   try {
-    // Step 1: 获取 token（飞书auth接口支持跨域）
-    const tokenRes = await fetch(
-      'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal',
-      { method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ app_id: FEISHU_APP_ID, app_secret: FEISHU_APP_SECRET }) }
-    );
-    const tokenData = await tokenRes.json();
-    if (!tokenData.tenant_access_token) throw new Error('token获取失败: ' + JSON.stringify(tokenData));
-    const token = tokenData.tenant_access_token;
-
-    // Step 2: 写入多维表格
-    const writeRes = await fetch(
-      `https://open.feishu.cn/open-apis/bitable/v1/apps/${FEISHU_APP_TOKEN}/tables/${FEISHU_TABLE_ID}/records`,
-      { method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ fields: buildPayload() }) }
-    );
-    const result = await writeRes.json();
+    // 通过 Vercel /api/feishu 代理写入，避免 CORS 限制
+    const res = await fetch('/api/feishu', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(buildPayload())
+    });
+    const result = await res.json();
     if (result.code === 0) {
       btn.textContent      = '✅ 提交成功';
       btn.style.background = 'var(--success)';
       status.textContent   = '数据已成功写入！感谢您的参与，您可以关闭此页面。';
       status.style.color   = 'var(--success)';
     } else {
-      throw new Error('飞书写入失败 code=' + result.code + ' msg=' + result.msg);
+      throw new Error('写入失败 code=' + result.code + ' msg=' + result.msg);
     }
   } catch(e) {
     console.error('飞书提交失败', e);
