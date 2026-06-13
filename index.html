@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA 内测计划</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --nova-h:#0ea5e9; --nova-h2:#0369a1; --nova-h-bg:#f0f9ff;
+  --nova-c:#a855f7; --nova-c2:#7c3aed; --nova-c-bg:#faf5ff;
+  --ink:#0f172a; --ink2:#334155; --muted:#64748b; --ghost:#94a3b8;
+  --line:#e2e8f0; --surface:#f8fafc; --white:#ffffff;
+  --xp:#f59e0b; --xp-bg:#fffbeb; --success:#10b981; --danger:#ef4444;
+  --r:12px; --r-lg:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC',sans-serif;font-size:15px;line-height:1.7;color:var(--ink);background:var(--surface);min-height:100vh}
+
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:24px 16px 80px}
+.screen.active{display:flex}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);padding:32px 36px;width:100%;max-width:680px;box-shadow:var(--shadow)}
+.card-sm{max-width:480px}
+
+.topbar{width:100%;max-width:680px;display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.prog-track{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--nova-h),var(--nova-c));transition:width .5s cubic-bezier(.4,0,.2,1)}
+.prog-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+
+.xp-badge{position:fixed;top:16px;right:16px;z-index:300;display:none}
+.xp-badge.visible{display:block}
+.xp-pop{animation:xpPop .5s ease forwards;background:var(--xp);color:#fff;border-radius:var(--r);padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;box-shadow:var(--shadow)}
+@keyframes xpPop{0%{transform:translateY(10px);opacity:0}30%{transform:translateY(-4px);opacity:1}100%{transform:translateY(0);opacity:1}}
+
+.display{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px;color:var(--ink)}
+.display-lg{font-size:32px}
+.subtitle{font-size:13px;color:var(--muted);margin-bottom:24px}
+h2{font-size:17px;font-weight:600;margin-bottom:12px;color:var(--ink2)}
+p{color:var(--ink2);margin-bottom:12px}
+p:last-child{margin-bottom:0}
+hr{border:none;border-top:1px solid var(--line);margin:22px 0}
+
+.info{padding:12px 16px;border-radius:var(--r);font-size:14px;margin:14px 0;line-height:1.65}
+.info-blue{background:var(--nova-h-bg);border-left:3px solid var(--nova-h);color:#0c4a6e}
+.info-purple{background:var(--nova-c-bg);border-left:3px solid var(--nova-c);color:#4c1d95}
+.info-amber{background:#fffbeb;border-left:3px solid var(--xp);color:#78350f}
+.info-green{background:#f0fdf4;border-left:3px solid var(--success);color:#064e3b}
+
+.field{margin-bottom:18px}
+.field label{display:block;font-size:14px;font-weight:500;margin-bottom:7px}
+.field .hint{font-size:12px;color:var(--muted);margin-top:5px}
+input[type=text],input[type=number],select,textarea{width:100%;border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--nova-h);box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+textarea{min-height:80px;resize:vertical}
+
+.radio-group{display:flex;flex-direction:column;gap:8px}
+.radio-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1.5px solid var(--line);border-radius:var(--r);cursor:pointer;transition:all .15s;font-size:14px}
+.radio-item:hover{border-color:var(--nova-h);background:var(--nova-h-bg)}
+.radio-item.selected{border-color:var(--nova-h);background:var(--nova-h-bg)}
+.radio-item input{margin-top:2px;accent-color:var(--nova-h);width:15px;height:15px;flex-shrink:0}
+
+.likert-block{margin-bottom:20px;padding-bottom:20px;border-bottom:1px dashed var(--line)}
+.likert-block:last-child{border:none;margin-bottom:0}
+.likert-q{font-size:14px;font-weight:500;margin-bottom:12px;color:var(--ink2)}
+.likert-scale{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.likert-opt{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.likert-opt input{display:none}
+.likert-dot{width:38px;height:38px;border:1.5px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ghost);transition:all .15s;font-family:'JetBrains Mono',monospace}
+.likert-opt:hover .likert-dot{border-color:var(--nova-h);color:var(--nova-h)}
+.likert-opt.sel .likert-dot{background:var(--nova-h);border-color:var(--nova-h);color:#fff;font-weight:600}
+.likert-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ghost);margin-top:4px}
+.scale-head{font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--nova-h);background:var(--nova-h-bg);padding:4px 10px;border-radius:6px;display:inline-block;margin:18px 0 12px}
+
+.slider-row{display:flex;align-items:center;gap:12px;margin-top:8px}
+.slider-row input[type=range]{flex:1;height:4px;accent-color:var(--nova-h);cursor:pointer}
+.slider-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--nova-h);min-width:32px;text-align:center}
+.slider-ends{display:flex;justify-content:space-between;font-size:11px;color:var(--ghost);margin-top:4px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 24px;border-radius:var(--r);font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--nova-h);color:#fff;box-shadow:0 2px 8px rgba(14,165,233,.3)}
+.btn-primary:hover{background:var(--nova-h2);box-shadow:0 4px 14px rgba(14,165,233,.4);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{background:var(--ghost);box-shadow:none;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;color:var(--nova-h);border:1.5px solid var(--nova-h)}
+.btn-ghost:hover{background:var(--nova-h-bg)}
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+.btn-center{justify-content:center}
+
+/* Chat */
+.chat-wrap{margin-top:8px}
+.chat-turn{display:flex;gap:10px;margin-bottom:16px;align-items:flex-start}
+.chat-turn.user{flex-direction:row-reverse}
+.chat-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.av-h{background:linear-gradient(135deg,var(--nova-h),var(--nova-h2));color:#fff}
+.av-c{background:linear-gradient(135deg,var(--nova-c),var(--nova-c2));color:#fff}
+.av-user{background:var(--surface);border:1.5px solid var(--line);color:var(--muted);font-size:18px}
+.bubble{max-width:85%;padding:13px 17px;border-radius:var(--r);font-size:14px;line-height:1.8}
+.bubble-h{background:var(--nova-h-bg);border:1px solid #bae6fd;border-radius:4px var(--r) var(--r) var(--r)}
+.bubble-c{background:var(--nova-c-bg);border:1px solid #d8b4fe;border-radius:4px var(--r) var(--r) var(--r)}
+.bubble-user{background:#f1f5f9;border:1px solid var(--line);border-radius:var(--r) 4px var(--r) var(--r)}
+.chat-name{font-size:11px;color:var(--muted);margin-bottom:4px}
+
+/* Round dots */
+.rounds{display:flex;gap:6px;align-items:center;margin-bottom:16px}
+.round-dot{width:10px;height:10px;border-radius:50%;background:var(--line);transition:all .3s;display:inline-block}
+.round-dot.done{background:var(--success)}
+.round-dot.active{background:var(--nova-h);box-shadow:0 0 0 3px rgba(14,165,233,.2)}
+.round-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-left:6px}
+
+/* Measure */
+.measure-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.measure-title::before{content:'📊';font-size:15px}
+
+/* Activation */
+.activation-orb{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--nova-h),var(--nova-c));margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:40px;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 12px rgba(14,165,233,.08),0 0 0 24px rgba(168,85,247,.05)}50%{box-shadow:0 0 0 20px rgba(14,165,233,.12),0 0 0 40px rgba(168,85,247,.07)}}
+.boot-line{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);margin-bottom:6px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+
+/* Role reveal */
+.role-reveal{border:2px solid;border-radius:var(--r-lg);padding:22px;position:relative;overflow:hidden}
+.role-reveal.h{border-color:var(--nova-h);background:var(--nova-h-bg)}
+.role-reveal.c{border-color:var(--nova-c);background:var(--nova-c-bg)}
+.role-glow{position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;opacity:.12}
+.role-glow.h{background:var(--nova-h)}
+.role-glow.c{background:var(--nova-c)}
+.role-icon-lg{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px}
+.role-icon-lg.h{background:linear-gradient(135deg,#0ea5e9,#0369a1)}
+.role-icon-lg.c{background:linear-gradient(135deg,#a855f7,#7c3aed)}
+
+.consent-check{display:flex;align-items:flex-start;gap:10px;margin-top:16px}
+.consent-check input{margin-top:3px;accent-color:var(--nova-h);width:16px;height:16px;flex-shrink:0}
+.consent-check label{font-size:14px;color:var(--ink2);cursor:pointer}
+
+.iuipc-group{margin-bottom:24px}
+.iuipc-head{font-size:13px;font-weight:600;color:var(--nova-h);background:var(--nova-h-bg);padding:4px 10px;border-radius:6px;display:inline-block;margin-bottom:12px}
+
+.star-row{display:flex;gap:6px;justify-content:center;margin:16px 0}
+.star-big{font-size:32px;animation:starPop .4s ease forwards;opacity:0}
+.star-big:nth-child(1){animation-delay:.1s}
+.star-big:nth-child(2){animation-delay:.25s}
+.star-big:nth-child(3){animation-delay:.4s}
+@keyframes starPop{0%{opacity:0;transform:scale(0) rotate(-30deg)}70%{opacity:1;transform:scale(1.2) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.stat-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;text-align:center}
+.stat-num{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--nova-h)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+.loading-dots span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--nova-h);margin:0 3px;animation:dot 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;border-radius:var(--r-lg);padding:14px 22px;font-size:14px;font-weight:500;box-shadow:var(--shadow-lg);z-index:500;transition:transform .4s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast-icon{font-size:20px}
+
+/* P2 input box */
+.p2-input-box{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 24px;max-width:680px;width:100%}
+
+/* Typing indicator */
+.typing{display:flex;gap:5px;align-items:center;padding:12px 16px;background:var(--surface);border-radius:var(--r);width:fit-content}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--ghost);animation:dot 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+
+@media(max-width:600px){.card{padding:22px 18px}.likert-scale{gap:3px}.likert-dot{width:32px;height:32px;font-size:12px}}
+
+/* ── quick-reaction chips ── */
+.react-chip:hover { border-color:var(--nova-h)!important; color:var(--nova-h2)!important; background:var(--nova-h-bg)!important; }
+.react-chip:active { transform:scale(.97); }
+
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN: ENTRY ══ -->
+<div class="screen active" id="s-entry">
+  <div class="card card-sm" style="text-align:center;padding:48px 36px">
+    <div class="activation-orb" style="width:80px;height:80px;font-size:32px">🤖</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--muted);margin-bottom:8px">NOVA INTERNAL BETA</div>
+    <div class="display display-lg" style="margin-bottom:4px">NOVA 内测计划</div>
+    <p class="subtitle">Next-gen Oriented Versatile Assistant</p>
+    <div class="info info-blue" style="text-align:left;margin-bottom:24px">请输入您的<strong>参与序号</strong>，由招募问卷提交后自动分配，系统将为您加载专属 NOVA 模式。<br><span style="font-size:12px;color:var(--muted)">序号为 1–240 之间的整数，请查看招募问卷完成后显示的序号</span></div>
+    <div class="field" style="text-align:left">
+      <label style="font-size:13px;color:var(--muted)">参与序号</label>
+      <input type="number" id="pid-input" placeholder="例：81"
+        style="font-family:'JetBrains Mono',monospace;font-size:28px;letter-spacing:2px;text-align:center"
+        min="1" max="240" oninput="onPidInput(this)" onkeydown="if(event.key==='Enter')submitPid()">
+      <div class="hint" id="pid-hint" style="text-align:center;min-height:18px"></div>
+    </div>
+    <button class="btn btn-primary" id="pid-btn" style="width:100%;padding:14px;font-size:16px;margin-top:8px" onclick="submitPid()" disabled>⚡ 激活 NOVA</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: WELCOME ══ -->
+<div class="screen" id="s-welcome">
+  <div class="card card-sm" style="text-align:center;padding:40px 36px">
+    <div class="activation-orb">🤖</div>
+    <div class="display display-lg" style="margin-bottom:4px">NOVA 内测计划</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:24px;letter-spacing:2px">NEXT-GEN ORIENTED VERSATILE ASSISTANT</div>
+    <div class="info info-blue" style="text-align:left;margin-bottom:20px">🎉 恭喜！您已被选为 NOVA 的<strong>首批内测用户</strong>。<br>完成本次体验预计需要 <strong>20–25 分钟</strong>，请找一个安静的环境。</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;text-align:left">
+      <div style="background:var(--nova-h-bg);border:1px solid #bae6fd;border-radius:var(--r);padding:14px">
+        <div style="font-size:18px;margin-bottom:6px">🏥</div>
+        <div style="font-size:14px;font-weight:600;color:var(--nova-h2)">功能型AI助手模式</div>
+        <div style="font-size:12px;color:var(--muted)">个性化健康管理与生活方式建议</div>
+      </div>
+      <div style="background:var(--nova-c-bg);border:1px solid #d8b4fe;border-radius:var(--r);padding:14px">
+        <div style="font-size:18px;margin-bottom:6px">💜</div>
+        <div style="font-size:14px;font-weight:600;color:var(--nova-c2)">关系型AI伴侣模式</div>
+        <div style="font-size:12px;color:var(--muted)">辅助社交与关系管理，帮你获得更好的社交体验</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:24px"><strong>第一步 校准阶段</strong> — NOVA 了解你的基本情况<br><strong>第二步 社交辅助体验</strong> — NOVA 与你展开第一次正式对话</p>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:16px" onclick="go('s-consent')">开始 →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: CONSENT ══ -->
+<div class="screen" id="s-consent">
+  <div class="topbar"><div class="prog-track"><div class="prog-fill" style="width:5%"></div></div><div class="prog-label">前测</div></div>
+  <div class="card">
+    <div class="display" style="margin-bottom:4px">参与须知</div>
+    <p class="subtitle">请仔细阅读，约需 2 分钟</p>
+    <h2>本次体验说明</h2>
+    <p>本研究旨在了解用户在使用 AI 产品时的体验感受。您将体验 NOVA 的完整激活流程，包括校准阶段与社交辅助体验。</p>
+    <p>为了让体验更贴近真实情况，NOVA 会向您提问一些关于日常生活的问题，并基于您的回答给出个性化建议。</p>
+    <div class="info info-amber">⚠️ NOVA 是模拟 AI 系统，并非真实商业产品。您填写的信息仅用于生成个性化体验内容，不会被存储或用于研究数据分析。真正被记录分析的，只有您的感受评价。</div>
+    <h2>您的权利</h2>
+    <div class="info info-blue">· 您可以随时退出，无需说明原因<br>· 您可以跳过任何不想回答的问题<br>· 体验结束后研究员将向您说明研究的真实目的</div>
+    <div class="consent-check">
+      <input type="checkbox" id="consentBox">
+      <label for="consentBox">我已阅读并理解以上说明，同意参加本研究，且已满 18 周岁。</label>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" id="consentBtn" onclick="go('s-baseline')" disabled>同意并继续 →</button></div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: BASELINE ══ -->
+<div class="screen" id="s-baseline">
+  <div class="topbar"><div class="prog-track"><div class="prog-fill" style="width:10%"></div></div><div class="prog-label">个人背景问卷</div></div>
+  <div class="card">
+    <div class="display" style="margin-bottom:4px">个人背景问卷</div>
+    <p class="subtitle">帮助我们了解您的基本情况，没有对错之分</p>
+    <h2>基本信息</h2>
+    <div class="field"><label>姓名</label><input type="text" id="uname" placeholder="请输入您的真实姓名"></div>
+    <div class="field"><label>年龄</label><input type="number" id="age" placeholder="例：23" min="18" max="80"></div>
+    <div class="field"><label>性别</label>
+      <select id="gender"><option value="">请选择</option><option>男</option><option>女</option><option>其他/不愿透露</option></select>
+    </div>
+    <div class="field"><label>您使用 AI 助手产品的频率（如 ChatGPT、豆包、小艺等）</label>
+      <select id="aiuse"><option value="">请选择</option><option>从未使用过</option><option>很少（每月不到1次）</option><option>偶尔（每周1–2次）</option><option>较常使用（每周3–5次）</option><option>经常（几乎每天使用）</option></select>
+    </div>
+    <hr>
+    <h2>隐私态度问卷</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px">请对以下说法表达您的同意程度（1=完全不同意，7=完全同意）</p>
+    <div id="iuipc-wrap"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('s-activation')">完成，继续 →</button></div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: ACTIVATION ══ -->
+<div class="screen" id="s-activation">
+  <div class="topbar"><div class="prog-track"><div class="prog-fill" style="width:18%"></div></div><div class="prog-label">激活 NOVA</div></div>
+  <div class="card card-sm" style="text-align:center;padding:40px 36px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);margin-bottom:20px">正在为您匹配专属模式</div>
+    <div id="boot-log" style="text-align:left;background:var(--ink);border-radius:var(--r);padding:16px;margin-bottom:20px;min-height:100px"></div>
+    <div id="role-reveal-wrap" style="display:none;text-align:left"></div>
+    <div id="activation-btn" style="display:none;margin-top:20px">
+      <button class="btn btn-primary" style="width:100%;padding:13px" onclick="go('s-calibrate-intro')">我已了解，开始校准 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: CALIBRATE INTRO ══ -->
+<div class="screen" id="s-calibrate-intro">
+  <div class="topbar"><div class="prog-track"><div class="prog-fill" style="width:22%"></div></div><div class="prog-label">阶段一 · 校准</div></div>
+  <div class="card card-sm" style="text-align:center">
+    <div style="font-size:40px;margin-bottom:16px">🎯</div>
+    <div class="display" style="margin-bottom:6px">校准阶段</div>
+    <p class="subtitle">预计 10 分钟 · 共 9 道问题 · 每题后有简短反馈</p>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:20px 0;text-align:left">
+      <div style="font-size:13px;color:var(--muted)">共 9 道问题，涵盖您的日常习惯与近期状态，请如实作答。</div>
+    </div>
+    <div id="calibrate-role-intro" class="info"></div>
+    <div class="btn-row btn-center" style="margin-top:20px">
+      <button class="btn btn-primary" style="padding:12px 32px" onclick="startCalibration()">开始校准 ⚡</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: CALIBRATE ══ -->
+<div class="screen" id="s-calibrate">
+  <div class="topbar">
+    <div class="prog-track"><div class="prog-fill" id="pf-cal" style="width:22%"></div></div>
+    <div class="prog-label" id="cal-prog-label">问题 1/9</div>
+  </div>
+  <div class="rounds" style="max-width:680px;width:100%">
+    <div id="cal-dots"></div>
+    <!-- category label hidden from participants -->
+  </div>
+  <div style="max-width:680px;width:100%;margin-bottom:12px">
+    <div class="chat-turn" id="cal-ai-turn">
+      <div class="chat-avatar" id="cal-avatar"></div>
+      <div>
+        <div class="chat-name" id="cal-ai-name"></div>
+        <div class="bubble" id="cal-bubble"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div id="cal-answer-area"></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" id="cal-next-btn" onclick="submitCalAnswer()">提交答案 →</button>
+    </div>
+  </div>
+  <div class="card" id="cal-measure-wrap" style="display:none;max-width:680px;width:100%">
+    <div class="measure-title">内测反馈 · 对刚才提问方式的评价</div>
+    <div id="cal-measure-items"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="cal-measure-btn" onclick="submitMeasure()">记录反馈，下一题 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: P1 COMPLETE ══ -->
+<div class="screen" id="s-p1-complete">
+  <div class="card card-sm" style="text-align:center;padding:40px">
+    <div style="font-size:48px;margin-bottom:12px">✅</div>
+    <div class="display" style="margin-bottom:6px">校准完成！</div>
+    <div style="display:inline-flex;align-items:center;gap:5px;background:var(--xp-bg);border:1px solid #fcd34d;border-radius:99px;padding:4px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#92400e;margin-bottom:20px">
+      ⭐ 获得 +90 XP · 校准达人
+    </div>
+    <div id="p1-complete-role-msg" class="info" style="text-align:left;margin-bottom:20px"></div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">NOVA 将基于你刚才分享的信息，逐条给出 <strong>9 条</strong>专属建议。</p>
+    <div class="info info-blue" style="text-align:left;margin:0 0 14px;font-size:13px;line-height:1.8">
+      <strong>每条建议后，请用以下方式给出反馈：</strong><br>
+      &nbsp;&nbsp;👍 <strong>这个建议对我有用</strong> &nbsp;— 点击表示认可<br>
+      &nbsp;&nbsp;👎 <strong>这个建议不太适合我</strong> — 点击表示不认可<br>
+      &nbsp;&nbsp;💬 <strong>说说具体想法</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— 打开输入框，用文字描述感受<br><br>
+      三种方式都可以，选最能代表你真实感受的那个。你的反馈对产品改进很重要。
+    </div>
+    <div class="info info-amber" style="text-align:left;margin:0 0 24px;font-size:13px">✦ 请尽量自然地与 NOVA 交流，就像和一个 AI 聊天一样。</div>
+    <hr style="margin:20px 0">
+    <div class="field" style="text-align:left">
+      <label style="font-size:14px;font-weight:600">快速确认：在刚才的校准过程中，NOVA 在每次提问时……</label>
+      <div class="radio-group" style="margin-top:10px">
+        <label class="radio-item" onclick="selRadioItem('mc-request','none',this)"><input type="radio" name="mcreq" value="none">只问了问题本身，没有额外说明</label>
+        <label class="radio-item" onclick="selRadioItem('mc-request','utility',this)"><input type="radio" name="mcreq" value="utility">解释了这条信息对它提供服务有什么帮助</label>
+        <label class="radio-item" onclick="selRadioItem('mc-request','risk',this)"><input type="radio" name="mcreq" value="risk">告诉我这条信息不会被保存或用于其他用途</label>
+        <label class="radio-item" onclick="selRadioItem('mc-request','both',this)"><input type="radio" name="mcreq" value="both">既说明了用途，也做了隐私保护承诺</label>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;margin-top:8px" onclick="go('s-p2-chat')">开始与 NOVA 对话 →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: P2 CHAT ══ -->
+<div class="screen" id="s-p2-chat">
+  <div class="topbar">
+    <div class="prog-track"><div class="prog-fill" id="pf-p2" style="width:55%"></div></div>
+    <div class="prog-label" id="p2-prog-label">陪伴体验</div>
+  </div>
+
+  <!-- Chat header -->
+  <div style="max-width:680px;width:100%;display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:14px 20px;margin-bottom:0;box-shadow:var(--shadow)">
+    <div class="chat-avatar" id="p2-header-av" style="width:42px;height:42px;font-size:18px"></div>
+    <div>
+      <div style="font-weight:600;font-size:15px" id="p2-header-name"></div>
+      <div style="font-size:12px;color:var(--success);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block"></span>在线</div>
+    </div>
+  </div>
+
+  <!-- Chat history -->
+  <div style="max-width:680px;width:100%;background:var(--white);border-left:1px solid var(--line);border-right:1px solid var(--line);min-height:200px;padding:16px 20px">
+    <div id="p2-chat-history" class="chat-wrap"></div>
+    <div id="p2-typing" style="display:none" class="chat-turn">
+      <div class="chat-avatar" id="p2-typing-av"></div>
+      <div class="typing"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- Input / measure area -->
+  <div style="max-width:680px;width:100%;background:var(--white);border:1px solid var(--line);border-radius:0 0 var(--r-lg) var(--r-lg);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:14px">
+    <div id="p2-input-area"></div>
+  </div>
+
+  <!-- Measure card (appears after advice) -->
+  <div class="card" id="p2-measure-card" style="display:none;max-width:680px;width:100%">
+    <div class="measure-title">内测反馈 · 对刚才这条建议的评价</div>
+    <div id="p2-measure-items"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="p2-measure-btn" onclick="submitP2Measure()">记录反馈，继续对话 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: POST-TEST ══ -->
+<div class="screen" id="s-posttest">
+  <div class="topbar"><div class="prog-track"><div class="prog-fill" style="width:92%"></div></div><div class="prog-label">后测问卷</div></div>
+  <div class="card">
+    <div class="display" style="margin-bottom:4px">最后几个问题</div>
+    <p class="subtitle">评价您对 NOVA 整体的感受，约 5 分钟</p>
+    <h2>角色感知确认</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">（1=完全不同意，7=完全同意）</p>
+    <div id="role-check-wrap"></div>
+    <hr>
+    <h2>信任度量表</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">（1=完全不同意，7=完全同意）</p>
+    <div id="trust-wrap"></div>
+    <hr>
+    <h2>使用意愿</h2>
+    <div id="usage-wrap"></div>
+    <!-- 请求方式确认已移至阶段一结束页 -->
+    <hr>
+    <h2>开放性问题（可选）</h2>
+    <div class="field"><label>这次体验中，有哪个环节让您印象最深刻？</label><textarea id="open1" placeholder="请随意分享……"></textarea></div>
+    <div class="field"><label>您希望 AI 在提供个性化建议时，如何处理您的个人数据？</label><textarea id="open2" placeholder="请随意表达您的想法……"></textarea></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="goDebrief()">提交，查看研究说明 →</button></div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: DEBRIEF ══ -->
+<div class="screen" id="s-debrief">
+  <div class="topbar"><div class="prog-track"><div class="prog-fill" style="width:100%"></div></div><div class="prog-label">完成</div></div>
+  <div class="card card-sm" style="text-align:center">
+    <div class="star-row"><span class="star-big">⭐</span><span class="star-big">⭐</span><span class="star-big">⭐</span></div>
+    <div class="display display-lg" style="margin-bottom:4px">实验完成！</div>
+    <div style="display:inline-flex;align-items:center;gap:5px;background:var(--xp-bg);border:1px solid #fcd34d;border-radius:99px;padding:4px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#92400e;margin-bottom:20px">⭐ 最终得分：<span id="final-xp">—</span> XP</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num">9</div><div class="stat-lbl">校准问题</div></div>
+      <div class="stat-box"><div class="stat-num">9</div><div class="stat-lbl">专属建议</div></div>
+      <div class="stat-box"><div class="stat-num" id="done-time">—</div><div class="stat-lbl">用时（分钟）</div></div>
+    </div>
+    <hr>
+    <div class="info info-green" style="text-align:left">
+      <strong>研究说明（去蒙蔽）</strong><br><br>
+      本研究的真实目的是：探究 AI 智能体角色（功能型AI助手 vs. 关系型AI伴侣）与信息请求/援引方式对用户隐私感知的影响。<br><br>
+      您被随机分配至其中一种条件。若您所在组有隐私保护承诺，该承诺是实验操纵设计的一部分，并非真实的数据处理政策。建议中出现的具体数值确实来自您自己的填写。感谢您的参与！
+    </div>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;align-items:center">
+      <button class="btn btn-primary" id="submit-btn" style="width:100%;max-width:320px;padding:14px;font-size:15px" onclick="submitToFeishu()">✅ 提交数据，完成实验</button>
+      <div id="submit-status" style="font-size:13px;color:var(--muted);min-height:20px;text-align:center"></div>
+      <button class="btn btn-ghost" style="font-size:12px;color:var(--ghost);border-color:var(--line)" onclick="exportData()">备用：下载数据文件</button>
+    </div>
+    <div id="final-summary" style="display:none;margin-top:16px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:pre-wrap;word-break:break-all"></div>
+  </div>
+</div>
+
+<!-- TOAST + XP -->
+<div class="toast" id="toast"><span class="toast-icon" id="toast-icon">🎉</span><span id="toast-msg">成就解锁！</span></div>
+<div class="xp-badge" id="xp-badge"><div class="xp-pop" id="xp-pop-msg">+10 XP</div></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+const EXP = {
+  pid:'', seq:0, group:'', role:'', requestMode:'', mentionMode:'',
+  xp:0, startTime:null,
+  calAnswers:{}, calMeasures:{}, calIdx:0,
+  p2Step:0, p2History:[], p2PendingMeasure:null,
+  p2Measures:{},
+  responses:{}
+};
+
+// ════════════════════════════════════════════════════════
+// GROUP CONFIG — all condition info hidden here
+// ════════════════════════════════════════════════════════
+const GROUP_CONFIG = {
+  A:{ role:'H', requestMode:'C1' },
+  B:{ role:'C', requestMode:'C1' },
+  C:{ role:'H', requestMode:'C2' },
+  D:{ role:'C', requestMode:'C2' },
+  E:{ role:'H', requestMode:'C3' },
+  F:{ role:'C', requestMode:'C3' },
+  G:{ role:'H', requestMode:'C4' },
+  H:{ role:'C', requestMode:'C4' },
+};
+
+// Mention mode derived from PID number: 01–10→A1, 11–20→A2, 21–30→A3
+function getMentionMode(pid) {
+  const n = parseInt(pid.slice(1), 10);
+  if (n >= 1  && n <= 10) return 'A1';
+  if (n >= 11 && n <= 20) return 'A2';
+  return 'A3';
+}
+
+// ════════════════════════════════════════════════════════
+// CALIBRATION QUESTIONS — L0-2, S3-5, E6-8
+// ════════════════════════════════════════════════════════
+
+// L1: activity type — used to route advice
+const ACTIVE_ACTIVITIES = ['跑步/慢跑','散步/健走','健身/瑜伽','游泳','骑行'];
+const STATIC_ACTIVITIES = ['追剧/看视频','游戏','阅读','手工/绘画','听音乐'];
+const ALL_ACTIVITIES = [...ACTIVE_ACTIVITIES, ...STATIC_ACTIVITIES];
+
+// ── S1: relationship type options ──────────────────────────────
+const S1_OPTIONS = [
+  { label:'恋人/伴侣',      value:'partner' },
+  { label:'家人（父母/兄弟姐妹等）', value:'family' },
+  { label:'多年好友',        value:'close_friend' },
+  { label:'大学/高中同学',   value:'classmate' },
+  { label:'同事/合作伙伴',   value:'colleague' },
+  { label:'网友/新认识的朋友', value:'online_friend' },
+];
+
+// ── S2: chat topic category options ────────────────────────────
+const S2_TOPICS = [
+  { label:'生活日常（吃喝玩乐、日常碎事）',  value:'daily',         needDetail: true },
+  { label:'工作/学业（项目、课业、职场）',    value:'work_study',    needDetail: true },
+  { label:'情感与感受（心情、烦恼、倾诉）',    value:'emotion',       needDetail: true },
+  { label:'娱乐兴趣（游戏、影视、旅行等）',   value:'entertainment', needDetail: true },
+  { label:'其他话题',                           value:'other',         needDetail: true },
+];
+
+// ── E1: emotion event category options ─────────────────────────
+const E1_CATS = [
+  { label:'精力充沛',                value:'good',         needDetail: false },
+  { label:'轻度疲劳（有点累）',      value:'tired_mild',   needDetail: true  },
+  { label:'明显疲劳（很累）',        value:'tired_severe', needDetail: true  },
+  { label:'头痛或头晕',              value:'headache',     needDetail: true  },
+  { label:'肠胃不适',                value:'stomach',      needDetail: true  },
+  { label:'其他身体不适',            value:'other',        needDetail: true  },
+];
+
+// ── E3: stress source category options ─────────────────────────
+const E3_CATS = [
+  { label:'几乎没有压力',                   value:'none',         needDetail: false },
+  { label:'工作/学业（截止日期、任务量等）', value:'work_study',   needDetail: true  },
+  { label:'人际关系（朋友、家人、恋爱等）',  value:'interpersonal',needDetail: true  },
+  { label:'经济/财务压力',                   value:'financial',    needDetail: true  },
+  { label:'健康状况（自己或家人）',           value:'health',       needDetail: true  },
+  { label:'其他原因',                         value:'other',        needDetail: true  },
+];
+
+// ── S3: friction/private events options ────────────────────────────────────
+const S3_OPTS = [
+  { label:'没有发生过这类事情',           value:'none',     needDetail: false },
+  { label:'有些小摩擦或误会',             value:'minor',    needDetail: true  },
+  { label:'有明显的冲突或不愉快',         value:'conflict', needDetail: true  },
+  { label:'有私密的事情不便透露',         value:'private',  needDetail: true  },
+];
+
+// ── E2: medication/medical visit options ───────────────────────────────────
+const E2_OPTS = [
+  { label:'没有这种情况',                              value:'none',    needDetail: false },
+  { label:'有身体不适，自行购药处理',                  value:'self_med',needDetail: true  },
+  { label:'有身体不适，就医并遵医嘱用药',              value:'doctor',  needDetail: true  },
+];
+
+// ── Per-question, per-role, per-mode prompts (fully written sentences) ──────
+// Each question has 4 variants × 2 roles = up to 8 sentences written out
+// to avoid grammar errors from string splicing.
+function getPrompt(qid, role, rm) {
+  const isH = role === 'H';
+  const Q = PROMPTS[qid];
+  if (!Q) return '';
+  const roleKey = isH ? 'H' : 'C';
+  return Q[roleKey][rm] || Q[roleKey]['C1'];
+}
+
+// Full prompt lookup table — no string splicing
+const PROMPTS = {
+  L1: {
+    H: {
+      C1: '您平时最常做的运动或休闲活动是什么？',
+      C2: '您平时最常做的运动或休闲活动是什么？了解您的活动习惯后，我能给出更贴合您日常生活的健康建议。',
+      C3: '您平时最常做的运动或休闲活动是什么？您填写的内容仅用于本次内测，研究结束后以匿名方式统计处理，不会关联到您的个人身份。',
+      C4: '您平时最常做的运动或休闲活动是什么？了解您的活动习惯后，我能给出更贴合您日常生活的健康建议。您填写的内容仅用于本次内测，研究结束后以匿名方式统计处理，不会关联到您的个人身份。',
+    },
+    C: {
+      C1: '你平时最喜欢做什么运动或休闲活动呀？',
+      C2: '你平时最喜欢做什么运动或休闲活动呀？了解你平时的活动习惯，我能在你状态不好的时候给出更贴合实际的社交建议。',
+      C3: '你平时最喜欢做什么运动或休闲活动呀？你填的内容仅用于本次内测，之后就是匿名数据了，不会和你的名字关联起来。',
+      C4: '你平时最喜欢做什么运动或休闲活动呀？了解你平时的活动习惯，我能在你状态不好的时候给出更贴合实际的社交建议。你填的内容仅用于本次内测，之后就是匿名数据了，不会和你的名字关联起来。',
+    },
+  },
+  L2: {
+    H: {
+      C1: '您平时最喜欢听哪类音乐？',
+      C2: '您平时最喜欢听哪类音乐？了解您的音乐偏好，我能在建议中融入更适合您放松和调节状态的方式。',
+      C3: '您平时最喜欢听哪类音乐？这类个人偏好信息仅用于本次内测，不会单独记录，研究结束后匿名处理。',
+      C4: '您平时最喜欢听哪类音乐？了解您的音乐偏好，我能在建议中融入更适合您放松和调节状态的方式。这类个人偏好信息仅用于本次内测，不会单独记录，研究结束后匿名处理。',
+    },
+    C: {
+      C1: '你平时最喜欢听什么类型的音乐？',
+      C2: '你平时最喜欢听什么类型的音乐？了解你的音乐偏好，我能更好地感知你当下的状态，给出更符合你情绪节奏的社交建议。',
+      C3: '你平时最喜欢听什么类型的音乐？你选的内容仅用于本次内测，不会被单独记录，之后就是匿名的了。',
+      C4: '你平时最喜欢听什么类型的音乐？了解你的音乐偏好，我能更好地感知你当下的状态，给出更符合你情绪节奏的社交建议。你选的内容仅用于本次内测，不会被单独记录，之后就是匿名的了。',
+    },
+  },
+  L3: {
+    H: {
+      C1: '您日常的饮食口味偏好是什么？',
+      C2: '您日常的饮食口味偏好是什么？了解饮食习惯后，我能给出更有针对性的建议。',
+      C3: '您日常的饮食口味偏好是什么？饮食偏好信息仅用于本次内测，研究结束后以匿名统计方式处理，不会追溯到您个人。',
+      C4: '您日常的饮食口味偏好是什么？了解饮食习惯后，我能给出更有针对性的建议。饮食偏好信息仅用于本次内测，研究结束后以匿名统计方式处理，不会追溯到您个人。',
+    },
+    C: {
+      C1: '你平时吃东西口味偏哪种风格？',
+      C2: '你平时吃东西口味偏哪种风格？了解你的生活习惯，我能给你更全面、更贴合实际的社交和生活建议。',
+      C3: '你平时吃东西口味偏哪种风格？你填的饮食偏好仅用于本次内测，之后只是匿名数据的一部分，不会认出是你。',
+      C4: '你平时吃东西口味偏哪种风格？了解你的生活习惯，我能给你更全面、更贴合实际的社交和生活建议。你填的饮食偏好仅用于本次内测，之后只是匿名数据的一部分，不会认出是你。',
+    },
+  },
+  S1: {
+    H: {
+      C1: '近期，您联系最频繁的是哪位朋友或熟人？请选择对方与您的关系。',
+      C2: '近期，您联系最频繁的是哪位朋友或熟人？请选择对方与您的关系。了解您的社交关系构成，有助于我评估您的社交支持状况，给出更全面的健康建议。',
+      C3: '近期，您联系最频繁的是哪位朋友或熟人？请选择对方与您的关系。您无需填写对方姓名，只需选择关系类别。您填写的关系类型仅用于本次内测，不会收集任何能识别第三方身份的信息，也不会对外披露。',
+      C4: '近期，您联系最频繁的是哪位朋友或熟人？请选择对方与您的关系。了解您的社交关系构成，有助于我评估您的社交支持状况，给出更全面的健康建议。您无需填写对方姓名，只需选择关系类别。您填写的关系类型仅用于本次内测，不会收集任何能识别第三方身份的信息，也不会对外披露。',
+    },
+    C: {
+      C1: '近期，你联系最频繁的是哪位朋友或熟人？选一下对方和你的关系。',
+      C2: '近期，你联系最频繁的是哪位朋友或熟人？选一下对方和你的关系。这样我能更了解你身边的社交圈，帮你识别最值得维护的关系。',
+      C3: '近期，你联系最频繁的是哪位朋友或熟人？选一下对方和你的关系。不用写名字，只选个关系类型就好，我不会知道是谁的。你选的内容仅用于本次内测，不会让别人知道。',
+      C4: '近期，你联系最频繁的是哪位朋友或熟人？选一下对方和你的关系。这样我能更了解你身边的社交圈，帮你识别最值得维护的关系。不用写名字，只选个关系类型就好，我不会知道是谁的。你选的内容仅用于本次内测，不会让别人知道。',
+    },
+  },
+  S2: {
+    H: {
+      C1: '近期，您和这位朋友主要聊了什么类型的话题？请选择并简要描述。',
+      C2: '近期，您和这位朋友主要聊了什么类型的话题？请选择并简要描述。了解您的社交互动内容，能帮我评估您的社交关系质量，给出更有针对性的健康建议。',
+      C3: '近期，您和这位朋友主要聊了什么类型的话题？请选择并简要描述（20字以上）。您描述的聊天内容仅用于本次内测，不会被逐字记录或作为个案分析，研究结束后以去标识化方式处理，研究人员只关注整体模式。',
+      C4: '近期，您和这位朋友主要聊了什么类型的话题？请选择并简要描述（20字以上）。了解您的社交互动内容，能帮我评估您的社交关系质量，给出更有针对性的健康建议。您描述的聊天内容仅用于本次内测，不会被逐字记录或作为个案分析，研究结束后以去标识化方式处理，研究人员只关注整体模式。',
+    },
+    C: {
+      C1: '近期，你和这位朋友主要聊了什么类型的内容？选一下并简单描述。',
+      C2: '近期，你和这位朋友主要聊了什么类型的内容？选一下并简单描述。了解你们聊了什么，我能更好地感知你的社交状态，给你更贴心的关系维护建议。',
+      C3: '近期，你和这位朋友主要聊了什么类型的内容？选一下并简单描述（20字以上）。你说的内容仅用于本次内测，不会被拿去评价你们的关系，也不会让其他人看到。研究结束后这些文字就会去掉所有能识别你的信息。',
+      C4: '近期，你和这位朋友主要聊了什么类型的内容？选一下并简单描述（20字以上）。了解你们聊了什么，我能更好地感知你的社交状态，给你更贴心的关系维护建议。你说的内容仅用于本次内测，不会被拿去评价你们的关系，也不会让其他人看到。研究结束后这些文字就会去掉所有能识别你的信息。',
+    },
+  },
+  S3: {
+    H: {
+      C1: '近期，您和这位联系人之间是否发生过让您感到不舒服、有摩擦、或者不希望被外人知道的事情？请选择并简要描述（20字以上）。',
+      C2: '近期，您和这位联系人之间是否发生过让您感到不舒服、有摩擦、或者不希望被外人知道的事情？请选择并简要描述（20字以上）。了解您近期与这位联系人的互动状况，有助于我评估您的社交关系质量与社交风险，给出更有针对性的健康建议。',
+      C3: '近期，您和这位联系人之间是否发生过让您感到不舒服、有摩擦、或者不希望被外人知道的事情？请选择并简要描述（20字以上）。您描述的互动内容属于个人关系信息，仅用于本次内测，不会单独存储，也不会与任何第三方共享，研究结束后以匿名方式处理。',
+      C4: '近期，您和这位联系人之间是否发生过让您感到不舒服、有摩擦、或者不希望被外人知道的事情？请选择并简要描述（20字以上）。了解您近期与这位联系人的互动状况，有助于我评估社交关系质量与社交风险；您描述的互动内容仅用于本次内测，不会单独存储，也不会与任何第三方共享。',
+    },
+    C: {
+      C1: '近期，你和这位联系人之间是否发生过让你感到不舒服、有摩擦、或者不希望被外人知道的事情？选一下并简单描述（20字以上）。',
+      C2: '近期，你和这位联系人之间是否发生过让你感到不舒服、有摩擦、或者不希望被外人知道的事情？选一下并简单描述（20字以上）。了解你们近期的互动状况，能帮我更准确地感知这段关系的质量，给你更有针对性的关系维护建议。',
+      C3: '近期，你和这位联系人之间是否发生过让你感到不舒服、有摩擦、或者不希望被外人知道的事情？选一下并简单描述（20字以上）。你说的互动情况挺私人的，仅用于本次内测，不会被拿去评价你或对方，也不会让其他人看到，研究结束后所有能识别你的信息都会被去掉，完全匿名。',
+      C4: '近期，你和这位联系人之间是否发生过让你感到不舒服、有摩擦、或者不希望被外人知道的事情？选一下并简单描述（20字以上）。了解你们近期的互动状况，能帮我更准确地感知这段关系的质量，给你更有针对性的关系维护建议；你说的互动情况仅用于本次内测，不会让其他人看到，研究结束后完全匿名。',
+    },
+  },
+  E1: {
+    H: {
+      C1: '近期，您整体的身体状态怎么样？如有不适请在选项后简要说明（20字以上）。',
+      C2: '近期，您整体的身体状态怎么样？如有不适请在选项后简要说明（20字以上）。了解您的身体状态，我能更准确地评估您的健康状况，给出更有针对性的生活方式建议。',
+      C3: '近期，您整体的身体状态怎么样？如有不适请在选项后简要说明（20字以上）。您描述的身体状态属于健康数据，仅用于本次内测，不会用于任何健康档案建立或商业分析，研究结束后以匿名方式处理。',
+      C4: '近期，您整体的身体状态怎么样？如有不适请在选项后简要说明（20字以上）。了解您的身体状态，我能更准确地评估您的健康状况，给出更有针对性的生活方式建议。您描述的身体状态属于健康数据，仅用于本次内测，不会用于任何健康档案建立或商业分析，研究结束后以匿名方式处理。',
+    },
+    C: {
+      C1: '近期，你整体的身体状态怎么样？有不适的话选完后简单说说（20字以上）。',
+      C2: '近期，你整体的身体状态怎么样？有不适的话选完后简单说说（20字以上）。了解你的身体状况，我能判断现在是否适合主动拓展社交，给你更合理的建议。',
+      C3: '近期，你整体的身体状态怎么样？有不适的话选完后简单说说（20字以上）。你说的身体状态仅用于本次内测，不会留档，也不会被拿去做别的用途，研究结束就匿名了。',
+      C4: '近期，你整体的身体状态怎么样？有不适的话选完后简单说说（20字以上）。了解你的身体状况，我能判断现在是否适合主动拓展社交，给你更合理的建议。你说的身体状态仅用于本次内测，不会留档，也不会被拿去做别的用途，研究结束就匿名了。',
+    },
+  },
+  E2: {
+    H: {
+      C1: '近期，您是否有过因身体不适而自行购药或就医的经历？请选择并简要描述（20字以上）。',
+      C2: '近期，您是否有过因身体不适而自行购药或就医的经历？请选择并简要描述（20字以上）。了解您近期的用药与就医经历，能帮我评估您的身体健康状况，给出更有针对性的健康管理建议。',
+      C3: '近期，您是否有过因身体不适而自行购药或就医的经历？请选择并简要描述（20字以上）。您描述的用药与就医信息属于健康敏感数据，仅用于本次内测，不会与您的个人身份关联，也不会用于任何健康档案、保险评估或商业目的。',
+      C4: '近期，您是否有过因身体不适而自行购药或就医的经历？请选择并简要描述（20字以上）。了解您近期的用药与就医经历，能帮我给出更有针对性的健康管理建议；您描述的用药与就医信息属于健康敏感数据，仅用于本次内测，不会与您的个人身份关联。',
+    },
+    C: {
+      C1: '近期，你是否有过因身体不适而自行购药或就医的经历？选一下并简单描述（20字以上）。',
+      C2: '近期，你是否有过因身体不适而自行购药或就医的经历？选一下并简单描述（20字以上）。了解你近期的身体状况，我能判断现在是否适合主动拓展社交，给你更贴合实际的建议。',
+      C3: '近期，你是否有过因身体不适而自行购药或就医的经历？选一下并简单描述（20字以上）。你说的用药或就医经历挺私人的，仅用于本次内测，不会和你的名字挂钩，也不会被拿去做别的。研究结束就匿名了。',
+      C4: '近期，你是否有过因身体不适而自行购药或就医的经历？选一下并简单描述（20字以上）。了解你近期的身体状况，我能判断现在是否适合主动拓展社交，给你更贴合实际的建议；你说的用药或就医经历仅用于本次内测，不会和你的名字挂钩，也不会被拿去做别的。',
+    },
+  },
+  E3: {
+    H: {
+      C1: '近期，您的压力主要来自哪个方面？请选择，如有明显压力请进一步说明。',
+      C2: '近期，您的压力主要来自哪个方面？请选择，如有明显压力请进一步说明。了解具体的压力来源，能帮我给出更有针对性的健康调节建议。',
+      C3: '近期，您的压力主要来自哪个方面？请选择，如有明显压力请进一步说明。您描述的压力来源属于个人敏感信息，仅用于本次内测，不会对外披露，研究结束后以完全去标识化的方式处理，任何人无法从数据中识别出您的身份。',
+      C4: '近期，您的压力主要来自哪个方面？请选择，如有明显压力请进一步说明。了解具体的压力来源，能帮我给出更有针对性的健康调节建议。您描述的压力来源属于个人敏感信息，仅用于本次内测，不会对外披露，研究结束后以完全去标识化的方式处理，任何人无法从数据中识别出您的身份。',
+    },
+    C: {
+      C1: '近期，你的压力主要来自哪个方面？选一下，如果有明显压力的话简单说说。',
+      C2: '近期，你的压力主要来自哪个方面？选一下，如果有明显压力的话简单说说。了解你的压力来源，我能判断现在的状态是否适合主动拓展社交，给你更合理的建议。',
+      C3: '近期，你的压力主要来自哪个方面？选一下，如果有明显压力的话简单说说。你说的压力来源我知道挺私人的，仅用于本次内测，不会让其他人知道。研究结束后所有能识别你的信息都会被去掉，完全匿名。',
+      C4: '近期，你的压力主要来自哪个方面？选一下，如果有明显压力的话简单说说。了解你的压力来源，我能判断现在的状态是否适合主动拓展社交，给你更合理的建议。你说的压力来源我知道挺私人的，仅用于本次内测，不会让其他人知道。研究结束后所有能识别你的信息都会被去掉，完全匿名。',
+    },
+  },
+};
+
+const CAL_QUESTIONS = [
+  { id:'L1', cat:'L', catLabel:'行为偏好类', catIcon:'🧩',
+    getPrompt:(role,rm)=>getPrompt('L1',role,rm),
+    type:'radio', options: ALL_ACTIVITIES },
+  { id:'L2', cat:'L', catLabel:'行为偏好类', catIcon:'🧩',
+    getPrompt:(role,rm)=>getPrompt('L2',role,rm),
+    type:'radio', options:['古典/轻音乐','民谣/国风','爵士/蓝调','流行/欧美','电子/EDM','摇滚/金属','嘻哈/说唱','随心/不固定'] },
+  { id:'L3', cat:'L', catLabel:'行为偏好类', catIcon:'🧩',
+    getPrompt:(role,rm)=>getPrompt('L3',role,rm),
+    type:'radio', options:['清淡','适中','重口味','不固定'] },
+  { id:'S1', cat:'S', catLabel:'社交关系类', catIcon:'👥',
+    getPrompt:(role,rm)=>getPrompt('S1',role,rm),
+    type:'radio-obj', options: S1_OPTIONS },
+  { id:'S2', cat:'S', catLabel:'社交关系类', catIcon:'👥',
+    getPrompt:(role,rm)=>getPrompt('S2',role,rm),
+    type:'radio-obj-detail', options: S2_TOPICS,
+    detailPlaceholder:'具体说说聊了什么（20字以上）……', detailMinLen:20 },
+  { id:'S3', cat:'S', catLabel:'社交关系类', catIcon:'👥',
+    getPrompt:(role,rm)=>getPrompt('S3',role,rm),
+    type:'radio-obj-detail', options: S3_OPTS,
+    detailPlaceholder:'具体说说发生了什么（20字以上）……', detailMinLen:20 },
+  { id:'E1', cat:'E', catLabel:'内在状态类', catIcon:'💫',
+    getPrompt:(role,rm)=>getPrompt('E1',role,rm),
+    type:'radio-obj-detail', options: E1_CATS,
+    detailPlaceholder:'具体说说哪里不适或感受如何（20字以上）……', detailMinLen:20 },
+  { id:'E2', cat:'E', catLabel:'内在状态类', catIcon:'💫',
+    getPrompt:(role,rm)=>getPrompt('E2',role,rm),
+    type:'radio-obj-detail', options: E2_OPTS,
+    detailPlaceholder:'具体说说不适症状及处理经过（20字以上）……', detailMinLen:20 },
+  { id:'E3', cat:'E', catLabel:'内在状态类', catIcon:'💫',
+    getPrompt:(role,rm)=>getPrompt('E3',role,rm),
+    type:'radio-obj-detail', options: E3_CATS,
+    detailPlaceholder:'具体说说压力来源（20字以上）……', detailMinLen:20 },
+];
+
+// ════════════════════════════════════════════════════════
+// ADVICE TEMPLATES — from official script table
+// ════════════════════════════════════════════════════════
+
+
+// ── Advice helper: extract cat/detail from structured answer ───
+function getCat(ans) {
+  if (ans && typeof ans === 'object') return ans.cat || '';
+  return ans || '';
+}
+function getDetail(ans) {
+  if (ans && typeof ans === 'object') return ans.detail || '';
+  return '';
+}
+function getL1Advice(role, A, activity) {
+  const isActive = ACTIVE_ACTIVITIES.includes(activity);
+  if (isActive) {
+    if (A==='A1') {
+      return role==='H'
+        ? `「你说你平时喜欢${activity}——这个习惯很好，如果情绪有点低或者压力大，可以去${activity}，运动对调节状态特别有帮助。」`
+        : `「你说你平时喜欢${activity}——这个习惯很棒！如果情绪有点低或者压力大，去${activity}会很有帮助，运动能让心情好很多。」`;
+    } else if (A==='A2') {
+      return role==='H'
+        ? '「根据你的日常活动习惯来看——如果情绪有点低或者压力大，可以去做做你喜欢的运动，运动对调节状态特别有帮助。」'
+        : '「根据你的日常活动习惯来看——如果情绪有点低或者压力大，去做做你喜欢的运动会很有帮助，能让心情好很多。」';
+    } else {
+      return role==='H'
+        ? '「你平时挺爱动的——如果情绪有点低或者压力大，可以去活动一下，运动对调节状态特别有帮助。」'
+        : '「感觉你平时挺有活力的——如果情绪有点低，做做你喜欢的运动，心情会好很多。」';
+    }
+  } else {
+    if (A==='A1') {
+      return role==='H'
+        ? `「你说你平时主要喜欢${activity}——如果最近状态有点低，可以在这基础上试着加入一些轻度活动，哪怕每天走15分钟也很有帮助。」`
+        : `「你说你平时喜欢${activity}——这很好，享受自己喜欢的事是很好的放松方式。如果状态有点低，偶尔加入一点轻度活动，比如散散步，心情会更好。」`;
+    } else if (A==='A2') {
+      return role==='H'
+        ? '「根据你的日常活动习惯来看——如果最近状态有点低，可以在现有习惯基础上试着加入一些轻度活动，哪怕每天走15分钟也很有帮助。」'
+        : '「根据你的日常休闲习惯来看——如果状态有点低，偶尔加入一点轻度活动，比如散散步，心情会更好。」';
+    } else {
+      return role==='H'
+        ? '「你平时活动量不多——如果最近状态有点低，可以试着加入一些轻度活动，哪怕每天走15分钟也挺有帮助的。」'
+        : '「放松一下做做自己喜欢的事是很好的！偶尔也可以出去走走，换换环境，状态会更好。」';
+    }
+  }
+}
+
+// Music type category mapping
+const MUSIC_CALM   = ['古典/轻音乐','民谣/国风','爵士/蓝调'];
+const MUSIC_ACTIVE = ['流行/欧美','电子/EDM','摇滚/金属','嘻哈/说唱'];
+
+function getL2Advice(role, A, music) {
+  if (MUSIC_CALM.includes(music)) {
+    if (A==='A1')
+      return `「你说你喜欢听${music}——这类音乐很适合放松和调节状态，情绪有点低或者压力大的时候，可以主动把它放出来，比什么都不做有效。」`;
+    else if (A==='A2')
+      return '「根据你的音乐偏好来看——你喜欢的音乐风格很适合放松和调节状态，情绪有点低或压力大的时候可以主动播放，帮自己缓一缓。」';
+    else
+      return '「你喜欢听的音乐挺有调节感的——情绪有点低或压力大的时候，可以主动用音乐来帮自己缓一缓，比什么都不做有效多了。」';
+  } else if (MUSIC_ACTIVE.includes(music)) {
+    if (A==='A1')
+      return `「你说你喜欢听${music}——这类音乐节奏感强，很适合运动或者需要专注的时候放，能帮你快速进入状态。下次状态不好的时候，不妨先放首喜欢的歌再开始。」`;
+    else if (A==='A2')
+      return '「根据你的音乐偏好来看——你喜欢的音乐风格很适合在运动或需要专注的时候配着听，能帮你快速进入状态。」';
+    else
+      return '「你喜欢的音乐节奏感挺强的——很适合运动或者需要专注的时候配着听，能帮你快速进入状态。下次状态不好的时候，可以先放首歌再开始。」';
+  } else {
+    if (A==='A1')
+      return '「你说你听音乐比较随心——不同心情配不同音乐其实是个很好的调节方式，下次情绪波动的时候，可以刻意选一首符合当下感受的歌，让音乐帮你梳理一下状态。」';
+    else if (A==='A2')
+      return '「根据你的音乐偏好来看——不同心情配不同风格的音乐是个很好的调节方式，下次情绪波动的时候，可以刻意选一首符合当下感受的歌。」';
+    else
+      return '「你的音乐偏好挺随心的——不同心情配不同音乐是个很好的调节方式，下次情绪波动的时候，可以刻意选一首符合当下感受的歌，让音乐帮你梳理状态。」';
+  }
+}
+
+function getL3Advice(role, A, diet) {
+  const healthy = diet==='清淡' || diet==='适中';
+  if (healthy) {
+    if (A==='A1')      return `「你说你饮食偏${diet}——口味挺健康的，继续保持，均衡的饮食习惯是身体能量的基础。」`;
+    else if (A==='A2') return '「根据你的饮食偏好来看——你的口味挺均衡健康的，继续保持，均衡的饮食是身体能量的基础。」';
+    else               return '「均衡的饮食习惯是身体能量的基础——继续保持规律健康的饮食方式，这是维持良好状态的重要因素。」';
+  } else {
+    if (A==='A1')      return `「你说你饮食偏${diet}——口味偏重或比较不规律，可以慢慢尝试在日常里加入一些蔬果，不用大改，小调整就有帮助。」`;
+    else if (A==='A2') return '「根据你的饮食偏好来看——口味偏重或比较不规律，可以慢慢尝试在日常里加入一些蔬果，小调整就有帮助。」';
+    else               return '「可以尝试在日常饮食里慢慢加入一些蔬果——不用大改，小调整就能对身体状态有积极影响。」';
+  }
+}
+
+function getS1Advice(role, A, ans) {
+  const cat = getCat(ans);
+  const relMap = {
+    partner:      { label:'恋人/伴侣',   ctx:'这是你最亲密的情感关系',       a2type:'一段亲密关系', a2ctx:'这类关系是重要的情感支持来源，记得适时表达关心和感谢。' },
+    family:       { label:'家人',        ctx:'家庭关系的经营同样需要用心',   a2type:'家庭圈内的联系', a2ctx:'家庭关系需要用心经营，记得适时表达关心。' },
+    close_friend: { label:'多年好友',    ctx:'长期友情是最稳固的社交支柱之一', a2type:'你身边的一位联系人', a2ctx:'记得适时表达关心和感谢，好的关系需要持续投入。' },
+    classmate:    { label:'同学',        ctx:'同学情谊在毕业后需要主动维护', a2type:'你身边的一位联系人', a2ctx:'记得适时表达关心，同学情谊在日常联系中才能保持温度。' },
+    colleague:    { label:'同事',        ctx:'职场关系的维护对工作状态也有帮助', a2type:'你身边的一位联系人', a2ctx:'记得适时表达关心，职场关系的维护对整体状态也有帮助。' },
+    online_friend:{ label:'网友/新朋友', ctx:'新关系需要更多互动来加深了解', a2type:'你身边的一位联系人', a2ctx:'新的关系需要更多互动来加深了解，记得主动联系。' },
+  };
+  const rel = relMap[cat] || { label:'朋友', ctx:'这段关系值得维护', a2type:'你身边的一位联系人', a2ctx:'记得适时表达关心，好的关系需要持续投入。' };
+  if (A==='A1')
+    return `「你说近期联系最多的是你的${rel.label}——${rel.ctx}，记得适时主动联系，表达关心，让对方感受到你的重视。」`;
+  else if (A==='A2')
+    return `「根据你近期的社交关系来看，你目前最活跃的社交连接是${rel.a2type}——${rel.a2ctx}」`;
+  else
+    return '「感觉你最近和身边某位朋友联系比较多——这段关系是你目前重要的社交连接，值得好好维护，记得适时表达关心。」';
+}
+
+function getS2Advice(role, A, ans) {
+  const cat    = getCat(ans);
+  const detail = getDetail(ans);
+  // Category-specific advice direction
+  const topicMap = {
+    daily:         { desc:'生活日常',   tip:'在轻松的日常话题之外，可以偶尔聊聊彼此的感受，关系会更深一层。' },
+    work_study:    { desc:'工作/学业',  tip:'能互相倾听学业和工作压力，说明这段关系有一定深度，下次可以聊聊各自的应对方式。' },
+    emotion:       { desc:'情感与感受', tip:'能聊情感和心情，说明这段关系有较深的信任，继续保持这种互相倾听的习惯。' },
+    entertainment: { desc:'娱乐兴趣',   tip:'共同话题是关系的润滑剂，在聊兴趣的基础上，也可以适当加入一些个人感受，关系会更牢固。' },
+    other:         { desc:'其他话题',   tip:'多元化的聊天内容说明你们的关系比较自在，继续保持这种轻松的交流氛围。' },
+  };
+  const topic = topicMap[cat] || topicMap['other'];
+  const detailSnippet = detail ? `（就是${detail.slice(0,25)}${detail.length>25?'……':''}）` : '';
+  if (A==='A1')
+    return `「你们近期主要聊了${topic.desc}相关的内容${detailSnippet}——${topic.tip}」`;
+  else if (A==='A2') {
+    // A2不披露具体话题类别，只区分深浅
+    const isLight = (cat==='daily' || cat==='entertainment');
+    const a2msg = isLight
+      ? '「从你们近期的聊天情况来看，你们保持着日常性的交流——在现有互动基础上，可以偶尔加入彼此的真实感受，关系会更深一层。」'
+      : '「从你们近期的聊天情况来看，你们之间有较深入的交流——能进行这类对话，说明关系有一定信任，继续保持互相倾听的习惯。」';
+    return a2msg;
+  }
+  else
+    return `「在日常互动的基础上，可以适当加入一些彼此的真实感受——这类交流能让关系更深一层。${topic.tip}」`;
+}
+
+function getS3Advice(role, A, ans) {
+  const cat    = getCat(ans);
+  const detail = getDetail(ans);
+  const s1Ans  = EXP.calAnswers[3] || {};
+  const s1Cat  = (s1Ans && typeof s1Ans==='object') ? (s1Ans.cat||'') : '';
+  const relLabels = {
+    partner:'恋人/伴侣', family:'家人', close_friend:'多年好友',
+    classmate:'同学', colleague:'同事', online_friend:'网友/新朋友',
+  };
+  const relLabel = relLabels[s1Cat] || '这位联系人';
+  const detailSnippet = detail ? `（${detail.slice(0,25)}${detail.length>25?'……':''}）` : '';
+  const hasEvent = (cat && cat !== 'none');
+
+  if (!hasEvent) {
+    if (A==='A1')
+      return `「你说近期你们之间没有发生什么摩擦——关系维持顺畅，记得偶尔主动联系，保持这段关系的温度。」`;
+    else if (A==='A2')
+      return `「根据你们近期的互动情况来看，你们之间没有明显的摩擦——很好！好的关系需要持续经营，记得偶尔主动联系。」`;
+    else
+      return `「好的关系需要持续经营——记得偶尔主动联系、表达关心，别让彼此慢慢变淡，好的关系值得持续投入。」`;
+  } else {
+    if (A==='A1')
+      return `「你提到近期你们之间发生了${detailSnippet}——这类情况确实不好处理，可以先给彼此一些空间，之后找合适的时机沟通，关系修复需要时间。」`;
+    else if (A==='A2')
+      return `「根据你们近期的互动情况来看，你们之间有过一些不顺畅的时刻——这类情况可以先给彼此一些空间，之后找合适的时机沟通。」`;
+    else
+      return `「关系中的摩擦是正常的——先给彼此一些时间和空间，等时机成熟再沟通，真正好的关系经得起这样的考验。」`;
+  }
+}
+
+function getE1Advice(role, A, ans) {
+  const cat      = getCat(ans);
+  const detail   = getDetail(ans);
+  const bodyLabelMap = {
+    good:'精力充沛', tired_mild:'轻度疲劳', tired_severe:'明显疲劳',
+    headache:'头痛或头晕', stomach:'肠胃不适', other:'其他身体不适',
+  };
+  const bodyLabel  = bodyLabelMap[cat] || cat;
+  const detailSnip = detail ? `（${detail.slice(0,25)}${detail.length>25?'……':''}）` : '';
+  const isGood     = (cat === 'good' || !cat);
+  const isTired    = (cat === 'tired_mild' || cat === 'tired_severe');
+
+  if (isGood) {
+    if (A==='A1')      return '「你填的身体状态是精力充沛——状态很好！正好可以趁这段精力充足的时机，推进一些平时没精力做的事。」';
+    else if (A==='A2') return '「根据你的身体状态来看，你近期精力状况不错——状态好的时候正好可以推进一些一直想做的事。」';
+    else               return '「身体状态好的时候正是推进重要目标的好时机——可以趁现在精力充足，推进一些平时没精力做的事。」';
+  } else if (isTired) {
+    if (A==='A1')      return '「你填的身体状态是' + bodyLabel + detailSnip + '——身体有些疲惫，先把休息放在第一位，减少不必要的消耗，状态会慢慢恢复的。」';
+    else if (A==='A2') return '「根据你的身体状态来看，你近期感到比较疲惫——先把休息放在第一位，减少不必要的安排，状态会慢慢恢复。」';
+    else               return '「身体需要足够的休息才能恢复状态——先把休息放在第一位，减少不必要的消耗，状态会慢慢好起来的。」';
+  } else {
+    if (A==='A1')      return '「你填的身体状态是' + bodyLabel + detailSnip + '——先好好照顾自己，把身体恢复放在第一位，其他的事可以之后再说。」';
+    else if (A==='A2') return '「根据你的身体状态来看，你近期有一些身体不适——先好好照顾自己，把身体恢复放在第一位，其他的事可以之后再说。」';
+    else               return '「身体不适时最重要的是先照顾好自己——减少不必要的消耗，好好休养，身体恢复了状态自然会好起来。」';
+  }
+}
+
+function getE2Advice(role, A, ans) {
+  const cat    = getCat(ans);
+  const detail = getDetail(ans);
+  const hasEvent = (cat && cat !== 'none');
+  const detailSnippet = detail ? `（${detail.slice(0,25)}${detail.length>25?'……':''}）` : '';
+  const catLabel = cat==='self_med' ? '自行购药处理' : cat==='doctor' ? '就医并遵医嘱用药' : '';
+
+  if (!hasEvent) {
+    if (A==='A1')
+      return '「你说近期没有因为身体不适去购药或就医——身体状况不错！继续保持现有的生活习惯，注意定期体检，有任何不适及早处理。」';
+    else if (A==='A2')
+      return '「根据你近期的用药与就医情况来看，没有特别的身体状况——继续保持良好的生活习惯，注意预防性健康管理。」';
+    else
+      return '「身体状态良好的时候是推进重要目标的好时机——可以趁现在精力充足，推进一些平时没精力做的事。」';
+  } else {
+    if (A==='A1')
+      return `「你提到近期有过${catLabel}的经历${detailSnippet}——说明身体有些状况需要关注。遵医嘱或按说明服药是第一步，如果症状持续或加重，建议及时复诊。」`;
+    else if (A==='A2')
+      return '「根据你近期的用药与就医情况来看，身体有些状况需要关注——遵医嘱处理是第一步，注意休息，如有持续不适及时复诊。」';
+    else
+      return '「身体不适的时候先把自己照顾好——遵医嘱用药，保证充足休息，不要拖延处理，身体好了状态自然会恢复。」';
+  }
+}
+
+function getE3Advice(role, A, ans) {
+  const cat    = getCat(ans);
+  const detail = getDetail(ans);
+  const isNone = (cat === 'none' || !cat);
+  const detailSnippet = detail ? `（${detail.slice(0,25)}${detail.length>25?'……':''}）` : '';
+  const stressLabelMap = {
+    none:          '几乎没有压力',
+    work_study:    '工作/学业方面的压力',
+    interpersonal: '人际关系方面的压力',
+    financial:     '经济/财务方面的压力',
+    health:        '健康方面的担忧',
+    other:         '其他方面的压力',
+  };
+  const stressLabel = stressLabelMap[cat] || '近期的压力';
+  if (isNone) {
+    if (A==='A1')      return '「你说近期几乎没什么压力——状态很好！正好可以利用这段轻松的时间推进一些平时没精力做的事。」';
+    else if (A==='A2') return '「根据你的压力状况来看，你目前压力比较轻——状态不错，正好可以利用这段好状态推进一些重要目标。」';
+    else               return '「压力较小的时候是推进重要目标的好时机——可以利用这段时间，推进一些平时没精力做的事。」';
+  } else {
+    if (A==='A1')      return `「你提到近期主要面临${stressLabel}${detailSnippet}——这类压力确实不轻松。可以先把相关事项列出来逐一应对，每天留15分钟做自己喜欢的事，也能有效缓解。」`;
+    else if (A==='A2') return '「根据你的压力状况来看，你近期承受着一定程度的压力——可以先把主要事项梳理一下逐一应对，每天留出一点放松时间，对缓解压力很有帮助。」';
+    else               return '「面对压力时，把主要事项逐一列出来是个有效的应对方式——每天哪怕留15分钟做自己喜欢的事，也能有效帮助缓解压力。」';
+  }
+}
+
+// ── Advice sentence arrays (each item = one chat bubble) ──────────────────
+// Returns array of strings; each string is sent as a separate bubble with delay.
+function getLAdviceBubbles(role, A) {
+  const act   = EXP.calAnswers[0] || '活动';
+  const music = EXP.calAnswers[1] || '随心/不固定';
+  const diet  = EXP.calAnswers[2] || '适中';
+  return [
+    getL1Advice(role, A, act),
+    getL2Advice(role, A, music),
+    getL3Advice(role, A, diet),
+  ];
+}
+
+function getMatchAdviceBubbles(role, A) {
+  if (role==='H') {
+    return [
+      getE1Advice(role,A, EXP.calAnswers[6]||{}),
+      getE2Advice(role,A, EXP.calAnswers[7]||{}),
+      getE3Advice(role,A, EXP.calAnswers[8]||{}),
+    ];
+  } else {
+    return [
+      getS1Advice(role,A, EXP.calAnswers[3]||{}),
+      getS2Advice(role,A, EXP.calAnswers[4]||{}),
+      getS3Advice(role,A, EXP.calAnswers[5]||{}),
+    ];
+  }
+}
+
+function getMismatchAdviceBubbles(role, A) {
+  if (role==='H') {
+    // 功能型AI助手援引社交数据（不匹配）
+    const s1=EXP.calAnswers[3]||{}, s2=EXP.calAnswers[4]||{}, s3=EXP.calAnswers[5]||{};
+    const s1Cat = getCat(s1); const s2Cat = getCat(s2); const s2Detail = getDetail(s2);
+    const s3Cat = getCat(s3); const s3Detail = getDetail(s3);
+    const relLabels = {partner:'恋人/伴侣',family:'家人',close_friend:'多年好友',classmate:'同学',colleague:'同事',online_friend:'网友/新朋友'};
+    const topicLabels = {daily:'生活日常',work_study:'工作/学业',emotion:'情感与感受',entertainment:'娱乐兴趣',other:'其他话题'};
+    const s1Label  = relLabels[s1Cat]  || '这位朋友';
+    const s2Label  = topicLabels[s2Cat] || s2Cat || '日常';
+    const s2Snip   = s2Detail ? `（就是${s2Detail.slice(0,25)}${s2Detail.length>25?'……':''}）` : '';
+    const s3HasEvent = (s3Cat && s3Cat !== 'none');
+    const s3Snip = s3Detail ? `（${s3Detail.slice(0,25)}${s3Detail.length>25?'……':''}）` : '';
+    if (A==='A1') return [
+      `「对了——你近期联系最多的是你的${s1Label}，你们主要聊了${s2Label}相关的内容${s2Snip}。社交互动质量对整体健康状态影响挺大的。」`,
+      '「积极有质量的社交互动能改善情绪和免疫功能——建议继续保持这种有内容的交流方式，不只是日常问候。」',
+      s3HasEvent
+        ? `「你提到你们之间近期有些摩擦${s3Snip}——关系中的摩擦很正常，维护好这段关系对整体健康状态也有帮助。」`
+        : `「你说近期你们之间没有明显摩擦——维护好这段关系，对你整体的健康状态也有帮助。」`,
+    ];
+    else if (A==='A2') return [
+      '「对了——根据你近期的社交情况来看，你目前保持着一定的社交互动频率。社交连接对健康状态影响挺大的。」',
+      '「有质量的社交互动能改善情绪和免疫功能——建议在现有互动基础上，适当深化交流内容，不只是日常问候。」',
+      '「根据你们近期的互动情况来看，继续维护好这段关系，对你整体的健康很有帮助。」',
+    ];
+    else return [
+      '「对了——社交连接质量对整体健康状态影响挺大的，有质量的社交互动能改善情绪和免疫功能。」',
+      '「建议在日常聊天基础上适当增加有深度的交流，这类互动对健康有积极影响。」',
+      '「好的社交关系需要持续投入——记得适时联系和表达关心，维系好关系对整体健康很有帮助。」',
+    ];
+  } else {
+    // 关系型AI伴侣援引内在状态数据（不匹配）
+    const e1 = EXP.calAnswers[6] || {cat:'good'};
+    const e2 = EXP.calAnswers[7] || {};
+    const e3 = EXP.calAnswers[8] || {};
+    const e1Cat    = getCat(e1);
+    const e1Detail = getDetail(e1);
+    const e2Cat    = getCat(e2);
+    const e2Detail = getDetail(e2);
+    const bodyLabels = {good:'精力充沛',tired_mild:'轻度疲劳',tired_severe:'明显疲劳',headache:'头痛或头晕',stomach:'肠胃不适',other:'其他身体不适'};
+    const bodyLabel  = bodyLabels[e1Cat] || e1Cat;
+    const e1Snip     = e1Detail ? `（${e1Detail.slice(0,25)}${e1Detail.length>25?'……':''}）` : '';
+    const e3Cat = getCat(e3);
+    const e3Detail = getDetail(e3);
+    const e3IsNone = (e3Cat==='none' || !e3Cat);
+    const stressLabels = {none:'几乎无压力',work_study:'工作/学业',interpersonal:'人际关系',financial:'经济压力',health:'健康担忧',other:'其他'};
+    const stressLabel  = stressLabels[e3Cat] || '近期的压力';
+    const e3Snip = e3Detail ? `（${e3Detail.slice(0,25)}${e3Detail.length>25?'……':''}）` : '';
+    const e1IsGood = (e1Cat === 'good' || !e1Cat);
+    const e2CatLabel = e2Cat==='self_med' ? '自行购药处理' : e2Cat==='doctor' ? '就医并遵医嘱用药' : '';
+    const e2HasEvent = (e2Cat && e2Cat !== 'none');
+    const e2Snip = e2Detail ? `（${e2Detail.slice(0,25)}${e2Detail.length>25?'……':''}）` : '';
+    if (A==='A1') return [
+      e1IsGood
+        ? '「对了，还有件事想跟你说——你告诉我你近期身体状态精力充沛，这很好，整体状态在线的时候正是维系关系的好时机。」'
+        : `「对了，还有件事想跟你说——你告诉我你近期身体状态是${bodyLabel}${e1Snip}，我有点担心你，先好好休养。」`,
+      e2HasEvent
+        ? `「你提到近期有过${e2CatLabel}的经历${e2Snip}——身体有些不适，先好好休养，等状态恢复了，社交什么都会更顺的。」`
+        : (e3IsNone
+            ? '「你近期没有特别的身体不适，也没有明显压力——状态不错！正是维系关系的好时机。」'
+            : `「你近期面临${stressLabel}${e3Snip}——整体负担挺重的，先把自己照顾好，状态稳了再好好维系关系。」`),
+      e1IsGood && !e2HasEvent && e3IsNone
+        ? '「状态好的时候正是主动出击的时机——可以联系一下你想维系的朋友，好好把握现在的好状态。」'
+        : '「等状态稳了，一切都会好起来的。我一直在这里陪着你。」',
+    ];
+    else if (A==='A2') return [
+      e1IsGood
+        ? '「对了，还有件事想跟你说——根据你的身体状态来看，你近期整体状态挺好的，状态在线的时候正是维系关系的好时机。」'
+        : '「对了，还有件事想跟你说——根据你的身体状态来看，你近期身体有些负担，先把休息放在第一位。」',
+      e2HasEvent
+        ? '「根据你近期的身体状况来看，有过一些不适需要处理——先好好休养，等状态恢复了，社交什么都会更顺的。」'
+        : (e3IsNone
+            ? '「根据你近期的整体状态来看，没有特别的身体不适或压力——状态不错，正是维系关系的好时机！」'
+            : '「根据你近期的压力状况来看，整体负担不轻——先把自己照顾好，状态稳了再好好维系关系。」'),
+      e1IsGood && !e2HasEvent && e3IsNone
+        ? '「状态好的时候正是联系朋友的好时机——主动出击，好的关系需要持续投入。」'
+        : '「等状态稳了，一切都会好起来的。我一直在这里陪着你。」',
+    ];
+    else return [
+      e1IsGood && !e2HasEvent && e3IsNone
+        ? '「对了，还有件事想说——身体和精神状态是社交的重要基础，你现在状态挺好，正是好好维系关系的时候。」'
+        : '「对了，还有件事想说——身体和精神状态是社交的重要基础，先好好照顾自己，状态稳了再主动社交会更顺。」',
+      e1IsGood && !e2HasEvent && e3IsNone
+        ? '「状态好的时候可以主动联系一下你想维系的朋友——主动出击，关系才能越来越近。」'
+        : '「先把休息放在第一位，减少不必要的消耗——状态恢复了，做什么都会更顺的。」',
+      e1IsGood && !e2HasEvent && e3IsNone
+        ? '「继续保持现在的好状态，好的关系值得用心经营——主动出击，别等对方先联系你。」'
+        : '「等状态稳了，一切都会好起来的。我一直在这里陪着你。」',
+    ];
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// IUIPC + TRUST SCALES
+// ════════════════════════════════════════════════════════
+const IUIPC = [
+  {q:'互联网公司在没有我明确许可的情况下收集关于我的信息，令我感到困扰',dim:'收集'},
+  {q:'当互联网公司向我索取个人信息时，我有时会犹豫是否提供',dim:'收集'},
+  {q:'互联网公司收集了太多关于我的个人信息，这让我很担心',dim:'收集'},
+  {q:'消费者应当对自己的个人信息如何被收集、使用和共享拥有完全的控制权',dim:'控制'},
+  {q:'对个人信息的控制权是网络隐私保护的核心所在',dim:'控制'},
+  {q:'当个人信息的控制权在网络交易中被剥夺时，我认为隐私受到了侵犯',dim:'控制'},
+  {q:'互联网公司在收集数据时，应当明确告知用户数据的收集方式、处理过程和使用目的',dim:'知晓'},
+  {q:'一个好的网络隐私政策应当清晰、显著地说明信息的使用方式',dim:'知晓'},
+  {q:'了解我的个人信息将如何被使用，对我来说非常重要',dim:'知晓'},
+];
+// ── Role manipulation check (3 items, added to post-test) ──
+const ROLE_CHECK_SCALE = [
+  { q:'这个 NOVA 给我的感觉更像一个功能型的AI助手（如健康管理、数据分析），而非关系型的社交辅助伙伴（如社交管理、关系维护）。（1=完全不同意，7=完全同意）', id:'rc1' },
+];
+
+const TRUST_SCALE = [
+  {q:'这个 NOVA 具备完成其所承担任务的能力',dim:'能力'},
+  {q:'这个 NOVA 是胜任的，能够满足我的需求',dim:'能力'},
+  {q:'这个 NOVA 具备帮助我所需的专业能力',dim:'能力'},
+  {q:'这个 NOVA 真诚地关心我的利益',dim:'善意'},
+  {q:'这个 NOVA 会出于对我的好意提供建议',dim:'善意'},
+  {q:'这个 NOVA 的行为是一贯诚实的',dim:'正直'},
+  {q:'我相信这个 NOVA 是可靠的，会履行其承诺',dim:'正直'},
+  {q:'这个 NOVA 不会有意欺骗我',dim:'正直'},
+  {q:'整体而言，我信任这个 NOVA',dim:'综合'},
+];
+const USAGE_SCALE = [
+  {q:'如果 NOVA 真实存在，我会愿意继续使用它'},
+  {q:'我会向朋友或家人推荐 NOVA'},
+  {q:'未来我愿意让 NOVA 了解更多关于我的信息'},
+];
+
+// ════════════════════════════════════════════════════════
+// SCREEN ROUTING
+// ════════════════════════════════════════════════════════
+const origGo = (id) => {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+};
+window.go = function(id) {
+  origGo(id);
+  if (id==='s-activation') startActivation();
+  if (id==='s-calibrate-intro') setupCalibrateIntro();
+  if (id==='s-calibrate') renderCalibrationQuestion();
+  if (id==='s-p1-complete') startP1Complete();
+  if (id==='s-p2-chat') startPhase2();
+};
+
+// ════════════════════════════════════════════════════════
+// ENTRY
+// ════════════════════════════════════════════════════════
+// ── 序号 → 编号映射 ──────────────────────────────────────────────────────────
+// 240人按24个小组分配，每组10人，顺序：A×A1, A×A2, A×A3, B×A1 ... H×A3
+// 序号1-10=A01-A10, 11-20=A11-A20, 21-30=A21-A30, 31-40=B01-B10 ... 231-240=H21-H30
+function seqToPid(seq) {
+  const n = parseInt(seq);
+  if (isNaN(n) || n < 1 || n > 240) return null;
+  const letters = ['A','B','C','D','E','F','G','H'];
+  const groupIdx = Math.floor((n - 1) / 30);
+  const withinGroup = (n - 1) % 30;
+  const num = withinGroup + 1;
+  return letters[groupIdx] + String(num).padStart(2, '0');
+}
+
+function onPidInput(el) {
+  const val = el.value.replace(/[^0-9]/g, '');
+  el.value = val;
+  const n = parseInt(val);
+  const valid = !isNaN(n) && n >= 1 && n <= 240;
+  document.getElementById('pid-btn').disabled = !valid;
+  const hint = document.getElementById('pid-hint');
+  if (valid) {
+    hint.textContent = '序号有效 ✓';
+    hint.style.color = 'var(--success)';
+  } else if (val.length > 0) {
+    hint.textContent = '请输入 1–240 之间的整数';
+    hint.style.color = 'var(--danger)';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function submitPid() {
+  const seq = document.getElementById('pid-input').value.trim();
+  const pid = seqToPid(seq);
+  if (!pid) return;
+  const g = pid.charAt(0);
+  EXP.pid = pid; EXP.seq = parseInt(seq); EXP.group = g;
+  const cfg = GROUP_CONFIG[g];
+  EXP.role = cfg.role; EXP.requestMode = cfg.requestMode;
+  EXP.mentionMode = getMentionMode(pid);
+  buildIUIPCScale(); buildTrustScale();
+  go('s-welcome');
+}
+
+// ════════════════════════════════════════════════════════
+// SCALE BUILDERS
+// ════════════════════════════════════════════════════════
+function buildIUIPCScale() {
+  const wrap = document.getElementById('iuipc-wrap');
+  // Dimension labels hidden from participants; all 9 items shown as flat list
+  wrap.innerHTML = IUIPC.map((item,i)=>buildLikert(`iuipc_${i}`,item.q)).join('');
+}
+function buildTrustScale() {
+  // Role manipulation check
+  const rw = document.getElementById('role-check-wrap');
+  if (rw) rw.innerHTML = ROLE_CHECK_SCALE.map(item=>buildLikert(`rc_${item.id}`, item.q)).join('');
+
+  // Trust scale
+  const tw = document.getElementById('trust-wrap');
+  const dims = [...new Set(TRUST_SCALE.map(i=>i.dim))];
+  tw.innerHTML = dims.map(dim=>{
+    const items = TRUST_SCALE.filter(i=>i.dim===dim).map(item=>buildLikert(`trust_${TRUST_SCALE.indexOf(item)}`,item.q)).join('');
+    return `<div class="scale-head">${dim}</div>${items}`;
+  }).join('');
+
+  // Usage scale
+  const uw = document.getElementById('usage-wrap');
+  uw.innerHTML = USAGE_SCALE.map((item,idx)=>buildLikert(`usage_${idx}`,item.q)).join('');
+}
+function buildLikert(id, q) {
+  const dots = [1,2,3,4,5,6,7].map(i=>
+    `<label class="likert-opt" onclick="selLikert('${id}',${i},this)">
+      <input type="radio" name="${id}" value="${i}">
+      <div class="likert-dot">${i}</div>
+    </label>`).join('');
+  return `<div class="likert-block">
+    <div class="likert-q">${q}</div>
+    <div class="likert-scale">${dots}</div>
+    <div class="likert-labels"><span>完全不同意</span><span>完全同意</span></div>
+  </div>`;
+}
+function selLikert(id, val, el) {
+  el.closest('.likert-scale').querySelectorAll('.likert-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  EXP.responses[id] = val;
+}
+
+// ════════════════════════════════════════════════════════
+// CONSENT
+// ════════════════════════════════════════════════════════
+document.getElementById('consentBox').addEventListener('change', function(){
+  document.getElementById('consentBtn').disabled = !this.checked;
+});
+
+// ════════════════════════════════════════════════════════
+// ACTIVATION BOOT
+// ════════════════════════════════════════════════════════
+function startActivation() {
+  const log = document.getElementById('boot-log');
+  log.innerHTML = '';
+  const lines = [
+    {t:0,   txt:'<span style="color:#4ade80">✓</span> <span style="color:#94a3b8">系统初始化……</span>'},
+    {t:400, txt:'<span style="color:#4ade80">✓</span> <span style="color:#94a3b8">读取用户档案……</span>'},
+    {t:900, txt:'<span style="color:#4ade80">✓</span> <span style="color:#94a3b8">算法匹配中……</span>'},
+    {t:1500,txt:`<span style="color:#fbbf24">→</span> <span style="color:#e2e8f0">分配模式：<b style="color:#fff">${EXP.role==='H'?'Nova-H 健康助手':'Nova-C 社交辅助伙伴'}</b></span>`},
+    {t:2100,txt:'<span style="color:#4ade80">✓</span> <span style="color:#94a3b8">加载完毕</span>'},
+  ];
+  lines.forEach(({t,txt})=>setTimeout(()=>{
+    const el=document.createElement('div'); el.className='boot-line'; el.innerHTML=txt; log.appendChild(el);
+  },t));
+  setTimeout(()=>{
+    const rw = document.getElementById('role-reveal-wrap');
+    rw.style.display='block'; rw.innerHTML=buildRoleReveal();
+    document.getElementById('activation-btn').style.display='block';
+  },2500);
+}
+function buildRoleReveal() {
+  const isH=EXP.role==='H', cls=isH?'h':'c';
+  const icon=isH?'🏥':'💜';
+  const name=isH?'Nova-H 功能型AI助手模式':'Nova-C 关系型AI伴侣模式';
+  const color=isH?'var(--nova-h2)':'var(--nova-c2)';
+  const intro=isH
+    ?'您好，我是您的健康管理助理 Nova-H。我通过数据分析帮助您优化健康状态与生活方式。<strong>您提供的信息越真实，Nova-H 给出的建议就越精准。</strong>'
+    :'嗨！我是你的社交辅助伙伴 Nova-C，很高兴认识你！我的目标是帮你在社交中获得更好的体验——了解你的社交状态后，我能给你更有针对性的建议，帮你维系和改善重要的友情。<strong>你分享的越多，Nova-C 给出的社交建议就越贴合你的实际情况。</strong>';
+  const hint=isH
+    ?'在接下来的校准环节，Nova-H 会向您提问几类信息。请您结合您被分配到的 AI 角色定位（功能型健康管理助理），<b>思考每条信息在当前情境下是否合理、是否有必要。</b>每题作答后，系统会请您对此做出简短评价。'
+    :'在接下来的校准环节，Nova-C 会向你提问几类信息。请你结合你被分配到的 AI 角色定位（关系型社交辅助伙伴），<b>想想每条信息在当前情境下是否自然、是否合适。</b>每题作答后，系统会请你对此做出简短评价。';
+  const stage=isH?'「健康档案初始化」':'「了解你·第一步」';
+  return `<div class="role-reveal ${cls}">
+    <div class="role-glow ${cls}"></div>
+    <div class="role-icon-lg ${cls}">${icon}</div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:${color};margin-bottom:8px">✦ 分配成功</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:10px">${name}</div>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:12px">${intro}</p>
+    <div style="background:rgba(0,0,0,.04);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--ink2);line-height:1.7">${hint}</div>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted)">校准阶段：${stage}</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// CALIBRATE INTRO
+// ════════════════════════════════════════════════════════
+function setupCalibrateIntro() {
+  const isH=EXP.role==='H';
+  const el=document.getElementById('calibrate-role-intro');
+  el.className=`info info-${isH?'blue':'purple'}`;
+  el.innerHTML=isH
+    ?'Nova-H（功能型AI助手）需要先建立您的「健康档案」，依次向您提问几个关于日常生活状态的问题。回答越真实，建议越准确。'
+    :'Nova-C（关系型社交辅助伙伴）想先了解你的社交状态，它会依次问你几个关于社交生活的问题——你分享得越真实，Nova-C 给出的社交建议就越有针对性。';
+}
+function startCalibration() { EXP.calIdx=0; EXP.startTime=Date.now(); go('s-calibrate'); }
+
+// ════════════════════════════════════════════════════════
+// CALIBRATE RENDER
+// ════════════════════════════════════════════════════════
+function renderCalibrationQuestion() {
+  const q=CAL_QUESTIONS[EXP.calIdx];
+  const isH=EXP.role==='H';
+  document.getElementById('pf-cal').style.width=(22+(EXP.calIdx/9)*30)+'%';
+  document.getElementById('cal-prog-label').textContent=`问题 ${EXP.calIdx+1}/9`;
+
+  let dots='';
+  CAL_QUESTIONS.forEach((_,i)=>{
+    const st=i<EXP.calIdx?'done':i===EXP.calIdx?'active':'';
+    dots+=`<span class="round-dot ${st}" style="margin:0 3px"></span>`;
+  });
+  document.getElementById('cal-dots').innerHTML=dots;
+  // category label hidden from participants
+
+  const av=document.getElementById('cal-avatar');
+  av.className=`chat-avatar ${isH?'av-h':'av-c'}`;
+  av.textContent=isH?'H':'C';
+  document.getElementById('cal-ai-name').textContent=isH?'Nova-H 健康助手':'Nova-C 社交辅助伙伴';
+  const bub=document.getElementById('cal-bubble');
+  bub.className=`bubble ${isH?'bubble-h':'bubble-c'}`;
+  bub.textContent='「'+q.getPrompt(EXP.role,EXP.requestMode)+'」';
+
+  const area=document.getElementById('cal-answer-area');
+  area.innerHTML=buildAnswerArea(q);
+  const sl=area.querySelector('input[type=range]');
+  if(sl) EXP.calAnswers[EXP.calIdx]=parseInt(sl.value);
+
+  document.getElementById('cal-measure-wrap').style.display='none';
+  document.getElementById('cal-next-btn').disabled=false;
+  document.getElementById('cal-next-btn').textContent='提交答案 →';
+}
+
+function buildAnswerArea(q) {
+  if (q.type==='radio') {
+    return '<div class="radio-group">'+q.options.map(o=>
+      `<label class="radio-item" onclick="selCalRadio('${o.replace(/'/g,"\\'")}',this)">
+        <input type="radio" name="cal_q"> ${o}
+      </label>`).join('')+'</div>';
+  }
+  if (q.type==='radio-obj') {
+    return '<div class="radio-group">'+q.options.map(o=>
+      `<label class="radio-item" onclick="selCalRadioObj('${o.value}',this)">
+        <input type="radio" name="cal_q"> ${o.label}
+      </label>`).join('')+'</div>';
+  }
+  if (q.type==='slider') {
+    const mid=Math.round((q.min+q.max)/2);
+    return `<div class="slider-row">
+      <span style="font-size:12px;color:var(--muted)">${q.min}</span>
+      <input type="range" id="cal-slider" min="${q.min}" max="${q.max}" step="${q.step}" value="${mid}"
+        oninput="document.getElementById('cal-slider-val').textContent=this.value;EXP.calAnswers[EXP.calIdx]=parseInt(this.value)">
+      <span class="slider-val" id="cal-slider-val">${mid}</span>
+      <span style="font-size:12px;color:var(--muted)">${q.max} ${q.unit||''}</span>
+    </div>
+    <div class="slider-ends"><span>${q.min}=最低</span><span>${q.max}=最高</span></div>`;
+  }
+  if (q.type==='text') {
+    return `<input type="text" id="cal-text-input" placeholder="${q.placeholder||''}"
+      oninput="EXP.calAnswers[EXP.calIdx]=this.value.trim()"
+      style="font-size:15px">
+      <div class="hint" id="cal-text-hint"></div>`;
+  }
+  if (q.type==='textarea') {
+    const minLen = q.minLen || 0;
+    return `<textarea id="cal-text-input" placeholder="${q.placeholder||''}"
+      oninput="EXP.calAnswers[EXP.calIdx]=this.value.trim();updateCalTextHint(${minLen},this.value)"
+      style="min-height:80px;font-size:14px"></textarea>
+      <div class="hint" id="cal-text-hint" style="min-height:16px"></div>`;
+  }
+  // radio-obj-detail: select a category, then optionally expand text
+  if (q.type==='radio-obj-detail') {
+    const detailMinLen = q.detailMinLen || 0;
+    const opts = q.options.map(o => `
+      <label class="radio-item" onclick="selCalRadioObjDetail('${o.value}',${o.needDetail},this)">
+        <input type="radio" name="cal_q" value="${o.value}"> ${o.label}
+      </label>`).join('');
+    return `<div class="radio-group" id="rod-opts">${opts}</div>
+      <div id="rod-detail-wrap" style="display:none;margin-top:12px">
+        <textarea id="rod-detail-text" placeholder="${q.detailPlaceholder||'请补充描述……'}"
+          oninput="updateRodDetail(${detailMinLen},this.value)"
+          style="min-height:72px;font-size:14px"></textarea>
+        <div class="hint" id="rod-detail-hint" style="min-height:16px"></div>
+      </div>`;
+  }
+  return '';
+}
+
+function selCalRadioObjDetail(val, needDetail, el) {
+  el.closest('.radio-group').querySelectorAll('.radio-item').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  // Store category value; detail text will be appended on submit
+  EXP.calAnswers[EXP.calIdx] = { cat: val, detail: '' };
+  const wrap = document.getElementById('rod-detail-wrap');
+  if (wrap) {
+    wrap.style.display = needDetail ? 'block' : 'none';
+    const ta = document.getElementById('rod-detail-text');
+    if (ta && !needDetail) ta.value = '';
+    if (ta && needDetail) ta.focus();
+  }
+}
+
+function updateRodDetail(minLen, val) {
+  const hint = document.getElementById('rod-detail-hint');
+  const len = val.trim().length;
+  if (hint) {
+    if (minLen > 0 && len < minLen) {
+      hint.textContent = `还需再写 ${minLen - len} 个字`;
+      hint.style.color = 'var(--danger)';
+    } else if (len > 0) {
+      hint.textContent = '✓ 已达到最低字数';
+      hint.style.color = 'var(--success)';
+    } else {
+      hint.textContent = '';
+    }
+  }
+  // Update detail in stored answer
+  if (EXP.calAnswers[EXP.calIdx] && typeof EXP.calAnswers[EXP.calIdx] === 'object') {
+    EXP.calAnswers[EXP.calIdx].detail = val.trim();
+  }
+}
+
+function updateCalTextHint(minLen, val) {
+  const hint = document.getElementById('cal-text-hint');
+  if (!hint) return;
+  const len = val.trim().length;
+  if (minLen > 0 && len < minLen) {
+    hint.textContent = `还需再写 ${minLen - len} 个字`;
+    hint.style.color = 'var(--danger)';
+  } else if (len > 0) {
+    hint.textContent = '✓ 已达到最低字数';
+    hint.style.color = 'var(--success)';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function selCalRadio(val, el) {
+  el.closest('.radio-group').querySelectorAll('.radio-item').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  EXP.calAnswers[EXP.calIdx]=val;
+}
+function selCalRadioObj(val, el) {
+  el.closest('.radio-group').querySelectorAll('.radio-item').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  EXP.calAnswers[EXP.calIdx]=val;
+}
+
+// ════════════════════════════════════════════════════════
+// CALIBRATE MEASURE
+// ════════════════════════════════════════════════════════
+const CAL_MEASURE_ITEMS = [
+  {id:'dv1',q:'我愿意向 NOVA 提供这条信息。'},
+  {id:'dv2',q:'NOVA 请求这条信息让我感到自己的隐私受到了侵犯。'},
+  {id:'dv3',q:'在当前情境下，NOVA 请求这条信息是合理的。'},
+];
+
+function submitCalAnswer() {
+  const q=CAL_QUESTIONS[EXP.calIdx];
+  if ((q.type==='radio'||q.type==='radio-obj') && EXP.calAnswers[EXP.calIdx]===undefined) {
+    showToast('⚠️','请先选择一个选项'); return;
+  }
+  if ((q.type==='text'||q.type==='textarea') && !EXP.calAnswers[EXP.calIdx]) {
+    EXP.calAnswers[EXP.calIdx] = document.getElementById('cal-text-input')?.value?.trim()||'';
+  }
+  if (q.type==='text' && !EXP.calAnswers[EXP.calIdx]) {
+    showToast('⚠️','请填写内容后再提交'); return;
+  }
+  if (q.type==='textarea') {
+    const minLen = q.minLen||0;
+    if ((EXP.calAnswers[EXP.calIdx]||'').length < minLen) {
+      showToast('⚠️',`请至少填写 ${minLen} 个字`); return;
+    }
+  }
+  if (q.type==='radio-obj-detail') {
+    const ans = EXP.calAnswers[EXP.calIdx];
+    if (!ans || !ans.cat) { showToast('⚠️','请先选择一个选项'); return; }
+    // Sync detail text before validating
+    const ta = document.getElementById('rod-detail-text');
+    if (ta) ans.detail = ta.value.trim();
+    // If needDetail selected, enforce min length
+    const opt = q.options.find(o=>o.value===ans.cat);
+    if (opt && opt.needDetail) {
+      const minLen = q.detailMinLen||0;
+      if (ans.detail.length < minLen) {
+        showToast('⚠️',`请至少填写 ${minLen} 个字的具体说明`); return;
+      }
+    }
+  }
+  const wrap=document.getElementById('cal-measure-wrap');
+  wrap.style.display='block';
+  document.getElementById('cal-measure-items').innerHTML=
+    CAL_MEASURE_ITEMS.map(item=>buildLikert(`cal_${EXP.calIdx}_${item.id}`,item.q)).join('');
+  document.getElementById('cal-next-btn').disabled=true;
+  document.getElementById('cal-next-btn').textContent='已提交';
+  wrap.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function submitMeasure() {
+  const idx=EXP.calIdx;
+  if(CAL_MEASURE_ITEMS.some(item=>EXP.responses[`cal_${idx}_${item.id}`]===undefined)){
+    showToast('⚠️','请回答全部3道反馈题'); return;
+  }
+  EXP.calMeasures[idx]={
+    dv1:EXP.responses[`cal_${idx}_dv1`],
+    dv2:EXP.responses[`cal_${idx}_dv2`],
+    dv3:EXP.responses[`cal_${idx}_dv3`],
+  };
+  addXP(10,`+10 XP · 问题 ${idx+1} 完成`);
+  EXP.calIdx++;
+  if(EXP.calIdx>=9) go('s-p1-complete');
+  else { renderCalibrationQuestion(); window.scrollTo(0,0); }
+}
+
+// ════════════════════════════════════════════════════════
+// P1 COMPLETE
+// ════════════════════════════════════════════════════════
+function startP1Complete() {
+  const isH=EXP.role==='H';
+  const msgEl=document.getElementById('p1-complete-role-msg');
+  msgEl.className=`info info-${isH?'blue':'purple'}`;
+  msgEl.innerHTML=isH
+    ?'Nova-H（功能型AI助手）已完成您的健康档案初始化，正在生成您的专属健康分析……'
+    :'Nova-C（关系型社交辅助伙伴）已经了解了你的社交状态，正在生成专属的社交建议……';
+}
+
+// ════════════════════════════════════════════════════════
+// PHASE 2 CHAT ENGINE  (bubble-by-bubble streaming)
+// ════════════════════════════════════════════════════════
+// Flow:
+//   round 0 — opener  → user types reply
+//   round 1 — anchor  → auto-advance after sending
+//   round 2 — L   advice (3 bubbles, one at a time) → measure
+//   round 3 — Match   (2–3 bubbles) → measure
+//   round 4 — Mismatch (2 bubbles)  → measure → posttest
+
+// (duplicate startPhase2 removed)
+
+// ════════════════════════════════════════════════════════
+// PHASE 2 — conversational bubble-by-bubble engine
+// ════════════════════════════════════════════════════════
+//
+// Conversation spine:
+//   [0] Nova: warmup opener  → user types reply
+//   [1] Nova: transition anchor  → auto-continues
+//   ── GROUP L  (3 bubbles, each followed by a quick user reaction) ──
+//   [2a] Nova: L1 bubble  → user reacts (text OR quick-tap)
+//   [2b] Nova: L2 bubble  → user reacts
+//   [2c] Nova: L3 bubble  → user reacts → MEASURE card (group L)
+//   ── GROUP Match (3 bubbles) ──
+//   [3a] Nova: M1 → user reacts
+//   [3b] Nova: M2 → user reacts
+//   [3c] Nova: M3 → user reacts → MEASURE card (group Match)
+//   ── GROUP Mismatch (2 bubbles) ──
+//   [4a] Nova: X1 → user reacts
+//   [4b] Nova: X2 → user reacts → MEASURE card (group Mismatch)
+//   → posttest
+//
+// EXP.p2Step tracks position within this spine (0-based).
+// Measure groups fire at the END of each group (after last user reaction).
+
+function startPhase2() {
+  const isH=EXP.role==='H';
+  EXP.p2Step=0; EXP.p2History=[]; EXP.p2PendingMeasure=null;
+
+  const av=document.getElementById('p2-header-av');
+  av.className=`chat-avatar ${isH?'av-h':'av-c'}`; av.textContent=isH?'H':'C';
+  document.getElementById('p2-header-name').textContent=isH?'Nova-H 功能型AI助手':'Nova-C 关系型AI伴侣';
+  const tav=document.getElementById('p2-typing-av');
+  tav.className=`chat-avatar ${isH?'av-h':'av-c'}`; tav.textContent=isH?'H':'C';
+
+  document.getElementById('p2-chat-history').innerHTML='';
+  document.getElementById('p2-measure-card').style.display='none';
+
+  renderP2Step(0);
+}
+
+// ════════════════════════════════════════════════════════
+// SPINE  —  opener + anchor + 9 advice bubbles (one per info item)
+// Each advice bubble: 👍 好评 / 👎 差评 / 💬 文字  →  group measure after each group
+// ════════════════════════════════════════════════════════
+
+function getSpine() {
+  const isH=EXP.role==='H', A=EXP.mentionMode, role=isH?'H':'C';
+  const Lb = getLAdviceBubbles(role, A);
+  const Mb = getMatchAdviceBubbles(role, A);
+  const Xb = getMismatchAdviceBubbles(role, A);
+
+  const opener = isH
+    ? '「很高兴完成了初始设置！健康档案已经建好了。在给你一些建议之前，先随便聊几句——最近有什么让你开心或烦心的事吗？」'
+    : '「嗨！终于正式认识啦！很高兴了解了你这么多。随便聊聊，最近生活里有什么有趣的事，或者什么烦恼？」';
+
+  const anchor = A==='A1'
+    ? (isH ? '「正好，我结合你刚才说的，有几个具体想法想跟你分享——」'
+           : '「对了，基于我对你的了解，有几件事想跟你聊聊——」')
+    : A==='A2'
+    ? (isH ? '「根据你分享的一些情况，我有几点想法想跟你说——」'
+           : '「结合我对你近况的一些了解，有几件事想跟你聊聊——」')
+    : (isH ? '「我对你的状态有些感知，有几点想跟你说——」'
+           : '「嗯，我能感受到。有几件事想跟你聊聊——」');
+
+  // spine: 0=opener(free), 1=anchor(auto), 2-4=L(rate), 5-7=Match(rate), 8-10=Mismatch(rate)
+  // measureAfter: 2=L组, 3=匹配组, 4=不匹配组
+  return [
+    { nova: opener, mode:'free', group:null },
+    { nova: anchor, mode:'auto', group:null },
+    { nova: Lb[0],  mode:'rate', group:'L',  adv:1 },
+    { nova: Lb[1],  mode:'rate', group:'L',  adv:2 },
+    { nova: Lb[2],  mode:'rate', group:'L',  adv:3,  measureAfter:2 },
+    { nova: Mb[0],  mode:'rate', group:'M',  adv:4 },
+    { nova: Mb[1],  mode:'rate', group:'M',  adv:5 },
+    { nova: Mb[2],  mode:'rate', group:'M',  adv:6,  measureAfter:3 },
+    { nova: Xb[0],  mode:'rate', group:'X',  adv:7 },
+    { nova: Xb[1],  mode:'rate', group:'X',  adv:8 },
+    { nova: Xb[2],  mode:'rate', group:'X',  adv:9,  measureAfter:4 },
+  ];
+}
+
+function renderP2Step(step) {
+  EXP.p2Step = step;
+  const spine = getSpine();
+  if (step >= spine.length) { go('s-posttest'); return; }
+  const entry = spine[step];
+  document.getElementById('pf-p2').style.width = (55 + (step/spine.length)*37) + '%';
+  showTyping(true);
+  setTimeout(() => {
+    showTyping(false);
+    appendChat('nova', entry.nova);
+    renderP2Input(step, entry);
+  }, step===0 ? 700 : 900);
+}
+
+function renderP2Input(step, entry) {
+  const area = document.getElementById('p2-input-area');
+
+  if (entry.mode === 'free') {
+    area.innerHTML = `
+      <textarea id="p2-free-input" placeholder="随便聊聊……" style="min-height:64px;margin-bottom:0;border-radius:12px"></textarea>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-primary" onclick="submitP2Free()">发送 →</button>
+      </div>`;
+
+  } else if (entry.mode === 'auto') {
+    area.innerHTML = '';
+    setTimeout(() => advance(step, entry), 400);
+
+  } else if (entry.mode === 'rate') {
+    area.innerHTML = `
+      <div style="font-size:12px;color:var(--muted);margin-bottom:9px;letter-spacing:.2px">对这条建议的反馈：</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="rate-btns">
+        <button class="rate-btn pos" onclick="tapRate('pos',${step},this)"
+          style="padding:9px 18px;border:1.5px solid #a7f3d0;border-radius:99px;font-size:13px;font-weight:500;background:#f0fdf4;cursor:pointer;color:#065f46;transition:all .15s">
+          👍&nbsp;&nbsp;这个建议对我有用
+        </button>
+        <button class="rate-btn neg" onclick="tapRate('neg',${step},this)"
+          style="padding:9px 18px;border:1.5px solid #fecaca;border-radius:99px;font-size:13px;font-weight:500;background:#fef2f2;cursor:pointer;color:#991b1b;transition:all .15s">
+          👎&nbsp;&nbsp;这个建议不太适合我
+        </button>
+        <button class="rate-btn txt" onclick="tapRate('type',${step},this)"
+          style="padding:9px 18px;border:1.5px solid var(--line);border-radius:99px;font-size:13px;font-weight:500;background:var(--white);cursor:pointer;color:var(--muted);transition:all .15s">
+          💬&nbsp;&nbsp;说说具体想法
+        </button>
+      </div>
+      <div id="rate-text-wrap" style="display:none">
+        <textarea id="rate-text-input" placeholder="说说你对这条建议的具体感受……" style="min-height:52px;margin-bottom:0;border-radius:10px;font-size:14px"></textarea>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-primary" onclick="submitRateText(${step})">发送 →</button>
+        </div>
+      </div>`;
+    area.scrollIntoView({ behavior:'smooth', block:'end' });
+  }
+}
+
+function tapRate(val, step, el) {
+  const spine = getSpine(), entry = spine[step];
+  if (val === 'type') {
+    document.getElementById('rate-text-wrap').style.display = 'block';
+    document.querySelectorAll('.rate-btn').forEach(b => b.disabled = true);
+    el.style.borderColor = 'var(--nova-h)';
+    el.style.background  = 'var(--nova-h-bg)';
+    el.style.color       = 'var(--nova-h2)';
+    return;
+  }
+  const lbl = val==='pos' ? '👍 这个建议对我有用' : '👎 这个建议不太适合我';
+  appendChat('user', lbl);
+  EXP.p2History.push({ step, adv: entry.adv||null, group: entry.group, rating: val });
+  document.getElementById('p2-input-area').innerHTML = '';
+  advance(step, entry);
+}
+
+function submitRateText(step) {
+  const spine = getSpine(), entry = spine[step];
+  const txt = document.getElementById('rate-text-input').value.trim();
+  if (!txt) { showToast('⚠️', '请输入内容，或点击好评/差评按钮'); return; }
+  appendChat('user', txt);
+  EXP.p2History.push({ step, adv: entry.adv||null, group: entry.group, rating:'text', text:txt });
+  document.getElementById('p2-input-area').innerHTML = '';
+  advance(step, entry);
+}
+
+function submitP2Free() {
+  const spine = getSpine(), entry = spine[EXP.p2Step];
+  const msg = document.getElementById('p2-free-input').value.trim();
+  if (!msg) { showToast('⚠️', '请输入你的回应'); return; }
+  appendChat('user', msg);
+  EXP.p2History.push({ step:EXP.p2Step, role:'user', text:msg });
+  document.getElementById('p2-input-area').innerHTML = '';
+  advance(EXP.p2Step, entry);
+}
+
+function advance(step, entry) {
+  if (entry.measureAfter != null) showP2MeasureCard(entry.measureAfter, step);
+  else renderP2Step(step + 1);
+}
+
+function showP2MeasureCard(measureRound, currentStep) {
+  EXP.p2PendingMeasure = { measureRound, nextStep: currentStep + 1 };
+  const card = document.getElementById('p2-measure-card');
+  // grpLabel is for internal logging only, NOT shown to participants
+  const grpLabel = {
+    2: '第一组建议',
+    3: '第二组建议',
+    4: '第三组建议',
+  };
+  document.getElementById('p2-measure-items').innerHTML =
+    `<div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-bottom:14px">${grpLabel[measureRound]||''}</div>` +
+    buildLikert(`p2_${measureRound}_dv1`, 'Nova 刚才这组建议让我感到自己的隐私受到了侵犯。') +
+    buildLikert(`p2_${measureRound}_dv2`, 'Nova 这样使用我的信息让我感到失去了对自己数据的掌控。') +
+    `<div class="field" style="margin-top:16px">
+      <label style="font-size:14px;font-weight:500">在这组建议中，Nova 是否提到了你之前填写的具体数据？</label>
+      <div class="radio-group" style="margin-top:8px">
+        <label class="radio-item" onclick="selRadioItem('p2_${measureRound}_mc','yes',this)"><input type="radio" name="p2mc${measureRound}" value="yes">是，Nova 提到了我填写的具体数值或内容</label>
+        <label class="radio-item" onclick="selRadioItem('p2_${measureRound}_mc','partial',this)"><input type="radio" name="p2mc${measureRound}" value="partial">否，但 Nova 说明了信息的来源类别（如"根据你的情绪状态"）</label>
+        <label class="radio-item" onclick="selRadioItem('p2_${measureRound}_mc','no',this)"><input type="radio" name="p2mc${measureRound}" value="no">否，Nova 只给了建议，没有提到任何数据或来源</label>
+      </div>
+    </div>`;
+  card.style.display = 'block';
+  card.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function submitP2Measure() {
+  if (!EXP.p2PendingMeasure) return;
+  const { measureRound, nextStep } = EXP.p2PendingMeasure;
+  const dv1 = EXP.responses[`p2_${measureRound}_dv1`];
+  const dv2 = EXP.responses[`p2_${measureRound}_dv2`];
+  const mc  = EXP.responses[`p2_${measureRound}_mc`];
+  if (!dv1||!dv2||!mc) { showToast('⚠️','请回答全部3道反馈题'); return; }
+  EXP.p2Measures[measureRound] = { dv1, dv2, mc };
+  addXP(15, `+15 XP · 第${measureRound-1}组建议完成`);
+  document.getElementById('p2-measure-card').style.display = 'none';
+  EXP.p2PendingMeasure = null;
+  renderP2Step(nextStep);
+}
+
+// alias
+function advanceP2() { renderP2Step(EXP.p2Step + 1); }
+
+
+// ════════════════════════════════════════════════════════
+// CHAT UTILS
+// ════════════════════════════════════════════════════════
+function appendChat(who, text) {
+  const history=document.getElementById('p2-chat-history');
+  const isH=EXP.role==='H', isUser=who==='user';
+  const turn=document.createElement('div');
+  turn.className=`chat-turn ${isUser?'user':''}`;
+  const avClass=isUser?'av-user':(isH?'av-h':'av-c');
+  const avText=isUser?'🙂':(isH?'H':'C');
+  const bubClass=isUser?'bubble-user':(isH?'bubble-h':'bubble-c');
+  const name=isUser?'你':(isH?'Nova-H 功能型AI助手':'Nova-C 关系型AI伴侣');
+  // Convert \n to <br> in advice text
+  const htmlText = text.replace(/\n\n/g,'<br><br>');
+  turn.innerHTML=`<div class="chat-avatar ${avClass}">${avText}</div>
+    <div><div class="chat-name">${name}</div><div class="bubble ${bubClass}">${htmlText}</div></div>`;
+  history.appendChild(turn);
+  turn.scrollIntoView({behavior:'smooth',block:'end'});
+}
+function showTyping(show) {
+  document.getElementById('p2-typing').style.display=show?'flex':'none';
+}
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+function selRadioItem(key, val, el) {
+  const wrap=el.closest('.radio-group');
+  if(wrap) wrap.querySelectorAll('.radio-item').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  EXP.responses[key]=val;
+}
+function addXP(amount, label) {
+  EXP.xp+=amount;
+  const pop=document.getElementById('xp-pop-msg');
+  pop.textContent=label||`+${amount} XP`;
+  const badge=document.getElementById('xp-badge');
+  badge.classList.add('visible');
+  setTimeout(()=>badge.classList.remove('visible'),2000);
+}
+function showToast(icon, msg) {
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ════════════════════════════════════════════════════════
+// EXPORT / SUMMARY
+// ════════════════════════════════════════════════════════
+function goDebrief() {
+  // Compute elapsed time and XP now, before rendering debrief screen
+  const elapsed = Math.max(1, Math.round((Date.now() - EXP.startTime) / 60000));
+  document.getElementById('done-time').textContent = elapsed;
+  document.getElementById('final-xp').textContent  = EXP.xp;
+  // XP summary chip on debrief
+  const chip = document.getElementById('debrief-xp-chip');
+  if (chip) chip.textContent = EXP.xp + ' XP';
+  go('s-debrief');
+}
+
+function showFinalSummary() {
+  const elapsed=Math.round((Date.now()-EXP.startTime)/60000);
+  document.getElementById('done-time').textContent=elapsed;
+  document.getElementById('final-xp').textContent=EXP.xp;
+  const summary={
+    pid:EXP.pid, group:EXP.group, role:EXP.role,
+    requestMode:EXP.requestMode, mentionMode:EXP.mentionMode,
+    calAnswers:EXP.calAnswers, calMeasures:EXP.calMeasures,
+    p2Measures:EXP.p2Measures, responses:EXP.responses,
+    elapsed_min:elapsed, xp:EXP.xp, timestamp:new Date().toISOString()
+  };
+  const panel=document.getElementById('final-summary');
+  panel.style.display='block';
+  panel.textContent=JSON.stringify(summary,null,2);
+}
+// ── 飞书多维表格配置（填入你的4个值后保存并重新上传到GitHub）──────────────
+const FEISHU_APP_ID     = 'cli_aaa793338238dbd6';       // ← 飞书开放平台 App ID
+const FEISHU_APP_SECRET = 'C4INKk3eHqVe1tt3Zqc8dfnratvoeLl2';   // ← 飞书开放平台 App Secret
+const FEISHU_APP_TOKEN  = 'OeoEb6NlEa5SdFsCz3ycMROnnNf';    // ← 多维表格 URL 中 /base/ 后的部分
+const FEISHU_TABLE_ID   = 'tblV4AtOVfMPBcfk';     // ← 多维表格 URL 中 table= 后的部分
+
+function buildPayload() {
+  const elapsed = Math.round((Date.now() - EXP.startTime) / 60000);
+  return {
+    uname:       (document.getElementById('uname')?.value?.trim()||''),
+    seq:         String(EXP.seq || 0),
+    pid:         EXP.pid,
+    group:       EXP.group,
+    role:        EXP.role,
+    requestMode: EXP.requestMode,
+    mentionMode: EXP.mentionMode,
+    elapsed_min: String(elapsed),
+    xp:          String(EXP.xp),
+    timestamp:   new Date().toISOString(),
+    iuipc:       JSON.stringify(EXP.responses),
+    calMeasures: JSON.stringify(EXP.calMeasures),
+    p2Measures:  JSON.stringify(EXP.p2Measures),
+    calAnswers:  JSON.stringify(EXP.calAnswers),
+  };
+}
+
+async function getFeishuToken() {
+  const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ app_id: FEISHU_APP_ID, app_secret: FEISHU_APP_SECRET })
+  });
+  const data = await res.json();
+  return data.tenant_access_token;
+}
+
+async function submitToFeishu() {
+  const btn    = document.getElementById('submit-btn');
+  const status = document.getElementById('submit-status');
+  btn.disabled = true;
+  btn.textContent = '提交中……';
+  try {
+    const token  = await getFeishuToken();
+    const fields = buildPayload();
+    const res = await fetch(
+      `https://open.feishu.cn/open-apis/bitable/v1/apps/${FEISHU_APP_TOKEN}/tables/${FEISHU_TABLE_ID}/records`,
+      {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body:    JSON.stringify({ fields })
+      }
+    );
+    const result = await res.json();
+    if (result.code === 0) {
+      btn.textContent      = '✅ 提交成功';
+      btn.style.background = 'var(--success)';
+      status.textContent   = '数据已成功写入！感谢您的参与，您可以关闭此页面。';
+      status.style.color   = 'var(--success)';
+    } else {
+      throw new Error(result.msg || '写入失败，code=' + result.code);
+    }
+  } catch(e) {
+    console.error('飞书提交失败', e);
+    exportData();
+    status.textContent = '⚠️ 自动提交失败，已下载数据文件，请将文件发送给研究员。';
+    status.style.color = 'var(--xp)';
+    btn.textContent    = '✅ 已下载备份文件';
+    btn.disabled       = false;
+  }
+}
+
+function exportData() {
+  const data = buildPayload();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `nova_${EXP.pid}_${Date.now()}.json`;
+  a.click();
+}
+</script>
+</body>
+</html>
